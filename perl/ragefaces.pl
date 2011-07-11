@@ -19,7 +19,7 @@ use strict;
 use warnings;
 
 my $script_name = 'ragefaces';
-my $author = 'stfn <stfnmd@googlemail.com';
+my $author = 'stfn <stfnmd@googlemail.com>';
 my $version = '1.0';
 my $license = 'GPL3';
 my $description = 'Send ragefac.es';
@@ -49,7 +49,7 @@ my $URL = 'http://ragefac.es/';
 weechat::register($script_name, $author, $version, $license, $description, "", "");
 
 # hooks
-weechat::hook_command("rage", "Send ragefac.es", "", "", completion(), "rage_cmd", "");
+weechat::hook_command("rage", "Send ragefac.es", "<rageface>", "", completion(), "rage_cmd", "");
 
 # subroutines
 sub completion
