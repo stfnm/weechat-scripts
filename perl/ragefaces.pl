@@ -65,7 +65,12 @@ sub completion
 sub rage_cmd
 {
 	my $buffer = $_[1];
-	my $args = $_[2];
+	my $arg = $_[2];
 
-	weechat::command($buffer, $URL . $RAGEFACES{$args}) if (exists $RAGEFACES{$args});
+	if (exists $RAGEFACES{$arg}) {
+		weechat::command($buffer, $URL . $RAGEFACES{$arg})
+	}
+	elsif ($arg =~ /^\d+$/) {
+		weechat::command($buffer, $URL . $arg);
+	}
 }
