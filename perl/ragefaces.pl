@@ -49,7 +49,7 @@ my $URL = 'http://ragefac.es/';
 weechat::register($script_name, $author, $version, $license, $description, "", "");
 
 # hooks
-weechat::hook_command("rage", "Send ragefac.es", "<rageface>", "", completion(), "rage_cmd", "");
+weechat::hook_command("rage", "Send ragefac.es", "<rageface>", "Use TAB-completion for help with the available ragefaces.", completion(), "rage_cmd", "");
 
 # subroutines
 sub completion
