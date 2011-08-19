@@ -27,7 +27,7 @@ my %SCRIPT = (
 );
 
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
-weechat::hook_command("go", "Go to buffer", "[name]", "", "%(buffers_names)", "command_cb", "");
+weechat::hook_command("goto", "Go to buffer", "[name]", "", "%(buffers_names)", "command_cb", "");
 
 sub command_cb
 {
