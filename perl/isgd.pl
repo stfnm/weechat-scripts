@@ -21,7 +21,7 @@ use CGI;
 
 my %SCRIPT = (
 	name => 'isgd',
-	author => 'stfn <stfnmd@googlemail.com',
+	author => 'stfn <stfnmd@googlemail.com>',
 	version => '1.0',
 	license => 'GPL3',
 	desc => 'Simply shorten incoming URLs with is.gd',
