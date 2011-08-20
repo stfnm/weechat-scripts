@@ -34,12 +34,23 @@ weechat::hook_print("", "", "", 1, "print_cb", "");
 sub print_cb
 {
 	my ($data, $buffer, $date, $tags, $displayed, $highlight, $prefix, $message) = @_;
-	
-	while ($message =~ m{(https?://\S+)}ig) {
-		my $url = $1;	
-		unless ($url =~ m{^https?://is\.gd/}ig) {
-			my $escaped = CGI::escape($url);
-			weechat::hook_process("wget -qO - \"http://is.gd/create.php?format=simple&url=$escaped\"", $TIMEOUT, "process_cb", $buffer);
+
+	my $win = weechat::window_search_with_buffer($buffer);
+	my $win_chat_width = weechat::window_get_integer($win, "win_chat_width");
+	my $prefix_max_length = weechat::buffer_get_integer($buffer, "prefix_max_length");
+
+	# Now this is the max message length that fits in a single line.
+	my $max_length = $win_chat_width - $prefix_max_length - 13;
+
+	# Only shorten the URL if it's somewhat likely that the long one
+	# got split into two or more lines.
+	if (length($message) > $max_length) {
+		while ($message =~ m{(https?://\S+)}ig) {
+			my $url = $1;
+			unless ($url =~ m{^https?://is\.gd/}ig) {
+				my $escaped = CGI::escape($url);
+				weechat::hook_process("wget -qO - \"http://is.gd/create.php?format=simple&url=$escaped\"", $TIMEOUT, "process_cb", $buffer);
+			}
 		}
 	}
 
