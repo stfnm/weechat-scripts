@@ -23,7 +23,7 @@ my %SCRIPT = (
 	author => 'stfn <stfnmd@googlemail.com>',
 	version => '1.0',
 	license => 'GPL3',
-	desc => 'Implements /go command to switch to a buffer in current window',
+	desc => 'Implements /goto command to switch to a buffer in current window',
 );
 
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
@@ -34,14 +34,14 @@ sub command_cb
 	my ($data, $buffer, $args) = @_;
 
 	my $infolist = weechat::infolist_get("buffer", "", "");
-	my $chan = $args;
-	$chan =~ s/ *//g;
+	my $arg = $args;
+	$arg =~ s/ *//g;
 
 	while (weechat::infolist_next($infolist)) {
 		my $name = weechat::infolist_string($infolist, "name");
 		my $pointer = weechat::infolist_pointer($infolist, "pointer");
 
-		if ($name =~ /^#?\Q${chan}\E/i) {
+		if ($name =~ /^#?\Q${arg}\E/i) {
 			weechat::buffer_set($pointer, "display", "1");
 			last;
 		}
