@@ -15,6 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# Development is currently hosted at
+# https://github.com/stfnm/weechat-scripts
+#
+
 use strict;
 use warnings;
 use CGI;
