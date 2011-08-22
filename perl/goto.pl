@@ -26,7 +26,7 @@ use warnings;
 my %SCRIPT = (
 	name => 'goto',
 	author => 'stfn <stfnmd@googlemail.com>',
-	version => '0.1',
+	version => '0.2',
 	license => 'GPL3',
 	desc => 'Implements /goto command to switch to a buffer in current window',
 );
@@ -43,7 +43,7 @@ sub command_cb
 	$arg =~ s/ *//g;
 
 	while (weechat::infolist_next($infolist)) {
-		my $name = weechat::infolist_string($infolist, "name");
+		my $name = weechat::infolist_string($infolist, "short_name");
 		my $pointer = weechat::infolist_pointer($infolist, "pointer");
 
 		if ($name =~ /^#?\Q${arg}\E/i) {
