@@ -21,7 +21,7 @@ use warnings;
 my %SCRIPT = (
 	name => 'goto',
 	author => 'stfn <stfnmd@googlemail.com>',
-	version => '1.0',
+	version => '0.1',
 	license => 'GPL3',
 	desc => 'Implements /goto command to switch to a buffer in current window',
 );
