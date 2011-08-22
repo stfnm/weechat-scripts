@@ -37,16 +37,13 @@ weechat::hook_command("goto", "Go to buffer", "[name]", "", "%(buffers_names)", 
 sub command_cb
 {
 	my ($data, $buffer, $args) = @_;
-
 	my $infolist = weechat::infolist_get("buffer", "", "");
-	my $arg = $args;
-	$arg =~ s/ *//g;
 
 	while (weechat::infolist_next($infolist)) {
 		my $name = weechat::infolist_string($infolist, "short_name");
 		my $pointer = weechat::infolist_pointer($infolist, "pointer");
 
-		if ($name =~ /^#?\Q${arg}\E/i) {
+		if ($name =~ /^#?\Q${args}\E/i) {
 			weechat::buffer_set($pointer, "display", "1");
 			last;
 		}
