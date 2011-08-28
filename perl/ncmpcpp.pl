@@ -26,30 +26,35 @@ use warnings;
 my %SCRIPT = (
 	name => 'ncmpcpp',
 	author => 'stfn <stfnmd@googlemail.com>',
-	version => '0.1',
+	version => '0.2',
 	license => 'GPL3',
 	desc => 'Control and "now playing" script for ncmpcpp',
 );
-my $TIMEOUT = 30 * 1000;
+my %OPTIONS = (
+	format => '/me np: {%a "%b" (%y) - %t}|{%a - %t}|{%f}', # see `man ncmpcpp` for song format
+);
+my $TIMEOUT = 20 * 1000;
 my $COMMANDS = "play|pause|toggle|stop|next|prev";
 
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
-weechat::hook_command("np", "Control ncmpcpp", "[$COMMANDS]", "without any arguments, \"now playing\" info is sent", $COMMANDS, "command_cb", "");
+weechat::hook_command($SCRIPT{"name"}, "Control ncmpcpp", "[$COMMANDS]", "without any arguments, \"now playing\" info is sent", $COMMANDS, "command_cb", "");
+weechat::hook_config("plugins.var.perl." . $SCRIPT{"name"} . ".*", "config_cb", "");
+
+init_config();
 
 sub command_cb
 {
 	my ($data, $buffer, $args) = @_;
-
 	my $cmd;
-	$cmd = "play" if ($args =~ /^play$/i);
-	$cmd = "pause" if ($args =~ /^pause$/i);
-	$cmd = "toggle" if ($args =~ /^toggle$/i);
-	$cmd = "stop" if ($args =~ /^stop$/i);
-	$cmd = "next" if ($args =~ /^next$/i);
-	$cmd = "prev" if ($args =~ /^prev$/i);
-	$cmd = "--now-playing '%a \"%b\" (%y) - %t'" if ($args =~ /^\s*$/);
 
-	weechat::hook_process("ncmpcpp $cmd", $TIMEOUT, "process_cb", $buffer);
+	if ($args =~ /^((play)|(pause)|(toggle)|(stop)|(next)|(prev))$/i) {
+		$cmd = lc($1);
+	}
+	elsif ($args =~ /^\s*$/) {
+		$cmd = "--now-playing '$OPTIONS{format}'";
+	}
+
+	weechat::hook_process("ncmpcpp $cmd", $TIMEOUT, "process_cb", $buffer) if ($cmd);
 
 	return weechat::WEECHAT_RC_OK;
 }
@@ -60,8 +65,30 @@ sub process_cb
 
 	if ($return_code >= 0 && $out) {
 		chomp($out);
-		weechat::command($data, "/me np: $out");
+		weechat::command($data, $out);
 	}
+
+	return weechat::WEECHAT_RC_OK;
+}
+
+sub init_config
+{
+    foreach my $option (keys %OPTIONS) {
+	if (!weechat::config_is_set_plugin($option)) {
+		weechat::config_set_plugin($option, $OPTIONS{$option});
+	}
+	else {
+		$OPTIONS{$option} = weechat::config_get_plugin($option);
+	}
+    }
+}
+
+sub config_cb
+{
+	my ($pointer, $name, $value) = @_;
+
+	$name = substr($name, length("plugins.var.perl." . $SCRIPT{"name"} . "."), length($name));
+	$OPTIONS{$name} = $value;
 
 	return weechat::WEECHAT_RC_OK;
 }
