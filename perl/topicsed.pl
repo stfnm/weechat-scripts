@@ -49,22 +49,21 @@ sub command_cb
 	}
 
 	unless (eval "\$x =~ $regex") {
-	weechat::print($buffer, "topicsed: An error occurred with your regex.");
+		weechat::print($buffer, weechat::prefix("error") . "topicsed: An error occurred with your regex.");
 		return weechat::WEECHAT_RC_OK;
 	}
 
 	if ($x eq $topic) {
-		weechat::print($buffer, "topicsed: The topic wouldn't be changed.");
+		weechat::print($buffer, weechat::prefix("error") . "topicsed: The topic wouldn't be changed.");
 		return weechat::WEECHAT_RC_OK;
 	} elsif ($x eq "") {
-		weechat::print($buffer, "topicsed: Edited topic is empty; try '/topic -delete' instead.");
+		weechat::print($buffer, weechat::prefix("error") . "topicsed: Edited topic is empty; try '/topic -delete' instead.");
 		return weechat::WEECHAT_RC_OK;
 	}
 
 	if ($preview) {
 		weechat::print($buffer, "topicsed: Edited topic preview: $x");
-	}
-	else {
+	} else {
 		weechat::command($buffer, "/topic $x");
 	}
 
