@@ -32,7 +32,7 @@ my %SCRIPT = (
 );
 
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
-weechat::hook_command($SCRIPT{"name"}, $SCRIPT{"desc"}, "<regex>", "", "%(irc_channel_topic)", "command_cb", "");
+weechat::hook_command($SCRIPT{"name"}, $SCRIPT{"desc"}, "[-p[review]] <regex>", "example: /topicsed s/apple/banana/", "%(irc_channel_topic)", "command_cb", "");
 
 sub command_cb
 {
@@ -48,9 +48,14 @@ sub command_cb
 		$regex =~ s/^-p\w* ?//;
 	}
 
-	unless (eval "\$x =~ $regex") {
-		weechat::print($buffer, weechat::prefix("error") . "topicsed: An error occurred with your regex.");
-		return weechat::WEECHAT_RC_OK;
+	{
+		local $SIG{__WARN__} = sub {};
+		local $SIG{__DIE__} = sub {};
+		eval "\$x =~ $regex";
+		if ($@) {
+			weechat::print($buffer, weechat::prefix("error") . "topicsed: An error occurred with your regex.");
+			return weechat::WEECHAT_RC_OK;
+		}
 	}
 
 	if ($x eq $topic) {
