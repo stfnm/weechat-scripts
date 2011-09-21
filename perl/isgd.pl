@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2011 by stfn <stfnmd@googlemail.com>
+# Copyright (C) 2011  stfn <stfnmd@googlemail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,37 +27,33 @@ use CGI;
 my %SCRIPT = (
 	name => 'isgd',
 	author => 'stfn <stfnmd@googlemail.com>',
-	version => '0.1',
+	version => '0.2',
 	license => 'GPL3',
-	desc => 'Simply shorten incoming URLs with is.gd',
+	desc => 'Shorten URLs with is.gd on command',
 );
 my $TIMEOUT = 30 * 1000;
 
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
-weechat::hook_print("", "", "", 1, "print_cb", "");
+weechat::hook_command($SCRIPT{"name"}, "Shorten last found URL in current buffer", "", "", "", "command_cb", "");
 
-sub print_cb
+sub command_cb
 {
-	my ($data, $buffer, $date, $tags, $displayed, $highlight, $prefix, $message) = @_;
+	my ($data, $buffer, $args) = @_;
+	my $infolist = weechat::infolist_get("buffer_lines", $buffer, "");
 
-	my $win = weechat::window_search_with_buffer($buffer);
-	my $win_chat_width = weechat::window_get_integer($win, "win_chat_width");
-	my $prefix_max_length = weechat::buffer_get_integer($buffer, "prefix_max_length");
-
-	# Now this is the max message length that fits in a single line.
-	my $max_length = $win_chat_width - $prefix_max_length - 13;
-
-	# Only shorten the URL if it's somewhat likely that the long one
-	# got split into two or more lines.
-	if (length($message) > $max_length) {
-		while ($message =~ m{(https?://\S+)}ig) {
-			my $url = $1;
-			unless ($url =~ m{^https?://is\.gd/}ig) {
+	while (weechat::infolist_prev($infolist) == 1) {
+		my $message = weechat::infolist_string($infolist, "message");
+		my $url = "";
+		while ($message =~ m{(https?://\S+)}gi) {
+			$url = $1;
+			unless ($url =~ m{^https?://is\.gd/}gi) {
 				my $escaped = CGI::escape($url);
 				weechat::hook_process("wget -qO - \"http://is.gd/create.php?format=simple&url=$escaped\"", $TIMEOUT, "process_cb", $buffer);
 			}
 		}
+		last if ($url);
 	}
+	weechat::infolist_free($infolist);
 
 	return weechat::WEECHAT_RC_OK;
 }
@@ -66,8 +62,8 @@ sub process_cb
 {
 	my ($data, $command, $return_code, $out, $err) = @_;
 	my $buffer = $data;
-	
-	if ($return_code >= 0 && $out) {
+
+	if ($return_code == 0 && $out) {
 		weechat::print($buffer, weechat::color("darkgray") . $out);
 	}
 
