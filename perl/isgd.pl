@@ -65,7 +65,6 @@ sub command_cb
 
 	foreach (@URLs) {
 		my $escaped = CGI::escape($_);
-		weechat::print($buffer, "Shortening... $_");
 		weechat::hook_process("wget -qO - \"http://is.gd/create.php?format=simple&url=$escaped\"", $TIMEOUT, "process_cb", $buffer);
 	}
 
