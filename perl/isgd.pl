@@ -34,26 +34,40 @@ my %SCRIPT = (
 my $TIMEOUT = 30 * 1000;
 
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
-weechat::hook_command($SCRIPT{"name"}, "Shorten last found URL in current buffer", "", "", "", "command_cb", "");
+weechat::hook_command($SCRIPT{"name"}, $SCRIPT{"desc"},
+	"[<URL> ...]\n",
+	"Without any URL arguments, the last found URL in the current buffer will be shortened.\n\n" .
+	"URL: URL to shorten. More than one URL may be given.",
+	"", "command_cb", "");
 
 sub command_cb
 {
 	my ($data, $buffer, $args) = @_;
-	my $infolist = weechat::infolist_get("buffer_lines", $buffer, "");
+	my @URLs;
 
-	while (weechat::infolist_prev($infolist) == 1) {
-		my $message = weechat::infolist_string($infolist, "message");
-		my $url = "";
-		while ($message =~ m{(https?://\S+)}gi) {
-			$url = $1;
-			unless ($url =~ m{^https?://is\.gd/}gi) {
-				my $escaped = CGI::escape($url);
-				weechat::hook_process("wget -qO - \"http://is.gd/create.php?format=simple&url=$escaped\"", $TIMEOUT, "process_cb", $buffer);
-			}
-		}
-		last if ($url);
+	# If URLs were provided in command arguments, shorten them
+	while ($args =~ m{(https?://\S+)}gi) {
+		push(@URLs, $1);
 	}
-	weechat::infolist_free($infolist);
+	# Otherwise search backwards in lines of current buffer
+	if (@URLs == 0) {
+		my $infolist = weechat::infolist_get("buffer_lines", $buffer, "");
+		while (weechat::infolist_prev($infolist) == 1) {
+			my $message = weechat::infolist_string($infolist, "message");
+			while ($message =~ m{(https?://\S+)}gi) {
+				my $url = $1;
+				push(@URLs, $url) unless ($url =~ m{^https?://is\.gd/}gi);
+			}
+			last if (@URLs > 0);
+		}
+		weechat::infolist_free($infolist);
+	}
+
+	foreach (@URLs) {
+		my $escaped = CGI::escape($_);
+		weechat::print($buffer, "Shortening... $_");
+		weechat::hook_process("wget -qO - \"http://is.gd/create.php?format=simple&url=$escaped\"", $TIMEOUT, "process_cb", $buffer);
+	}
 
 	return weechat::WEECHAT_RC_OK;
 }
