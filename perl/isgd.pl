@@ -32,6 +32,7 @@ my %SCRIPT = (
 	desc => 'Shorten URLs with is.gd on command',
 );
 my $TIMEOUT = 30 * 1000;
+my %LOOKUP;
 
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
 weechat::hook_command($SCRIPT{"name"}, $SCRIPT{"desc"},
@@ -64,8 +65,9 @@ sub command_cb
 	}
 
 	foreach (@URLs) {
-		my $escaped = CGI::escape($_);
-		weechat::hook_process("wget -qO - \"http://is.gd/create.php?format=simple&url=$escaped\"", $TIMEOUT, "process_cb", $buffer);
+		my $cmd = "wget -qO - \"http://is.gd/create.php?format=simple&url=" . CGI::escape($_) . "\"";
+		$LOOKUP{$cmd} = $_;
+		weechat::hook_process($cmd, $TIMEOUT, "process_cb", $buffer);
 	}
 
 	return weechat::WEECHAT_RC_OK;
@@ -77,7 +79,9 @@ sub process_cb
 	my $buffer = $data;
 
 	if ($return_code == 0 && $out) {
-		weechat::print($buffer, weechat::color("darkgray") . $out);
+		my $domain = "";
+		$domain = $1 if ($LOOKUP{$command} =~  m{^https?://([^/]+)}gi);
+		weechat::print($buffer, weechat::color("darkgray") . "$out ($domain)");
 	}
 
 	return weechat::WEECHAT_RC_OK;
