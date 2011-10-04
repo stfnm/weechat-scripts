@@ -70,13 +70,13 @@ sub write_log
 
 sub compile_mask
 {
-	my ($path, $server) = @_;
+	my ($mask, $server) = @_;
 	my $home = weechat::info_get("weechat_dir", "");
 
 	# Substitute all variables
-	$path = strftime($path, localtime());
-	$path =~ s/\$home/$home/gi;
-	$path =~ s/\$server/$server/gi;
+	$mask = strftime($mask, localtime());
+	$mask =~ s/\$home/$home/gi;
+	$mask =~ s/\$server/$server/gi;
 
-	return $path;
+	return $mask;
 }
