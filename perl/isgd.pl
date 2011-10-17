@@ -30,6 +30,10 @@ my %SCRIPT = (
 	version => '0.2',
 	license => 'GPL3',
 	desc => 'Shorten URLs with is.gd on command',
+	opt => 'plugins.var.perl',
+);
+my %OPTIONS = (
+	color => 'white', # color used for printing short URLs
 );
 my $TIMEOUT = 30 * 1000;
 my %LOOKUP;
@@ -40,6 +44,8 @@ weechat::hook_command($SCRIPT{"name"}, $SCRIPT{"desc"},
 	"Without any URL arguments, the last found URL in the current buffer will be shortened.\n\n" .
 	"URL: URL to shorten. More than one URL may be given.",
 	"", "command_cb", "");
+
+init_config();
 
 sub command_cb
 {
@@ -81,8 +87,29 @@ sub process_cb
 	if ($return_code == 0 && $out) {
 		my $domain = "";
 		$domain = $1 if ($LOOKUP{$command} =~  m{^https?://([^/]+)}gi);
-		weechat::print($buffer, "$out ($domain)");
+		weechat::print($buffer, weechat::color($OPTIONS{color}) . "$out ($domain)");
 	}
+
+	return weechat::WEECHAT_RC_OK;
+}
+
+sub init_config
+{
+	weechat::hook_config("$SCRIPT{'opt'}.$SCRIPT{'name'}.*", "config_cb", "");
+	foreach my $option (keys %OPTIONS) {
+		if (!weechat::config_is_set_plugin($option)) {
+			weechat::config_set_plugin($option, $OPTIONS{$option});
+		} else {
+			$OPTIONS{$option} = weechat::config_get_plugin($option);
+		}
+	}
+}
+
+sub config_cb
+{
+	my ($pointer, $name, $value) = @_;
+	$name = substr($name, length("$SCRIPT{'opt'}.$SCRIPT{'name'}."), length($name));
+	$OPTIONS{$name} = $value;
 
 	return weechat::WEECHAT_RC_OK;
 }
