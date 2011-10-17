@@ -87,7 +87,7 @@ sub process_cb
 	if ($return_code == 0 && $out) {
 		my $domain = "";
 		$domain = $1 if ($LOOKUP{$command} =~  m{^https?://([^/]+)}gi);
-		weechat::print($buffer, weechat::color($OPTIONS{color}) . "$out ($domain)");
+		weechat::print_date_tags($buffer, 0, "no_log", weechat::color($OPTIONS{color}) . "$out ($domain)");
 	}
 
 	return weechat::WEECHAT_RC_OK;
