@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2011  stfn <stfnmd@googlemail.com>
+# Copyright (C) 2011-2012  stfn <stfnmd@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ use CGI;
 
 my %SCRIPT = (
 	name => 'isgd',
-	author => 'stfn <stfnmd@googlemail.com>',
+	author => 'stfn <stfnmd@gmail.com>',
 	version => '0.2',
 	license => 'GPL3',
 	desc => 'Shorten URLs with is.gd on command',
@@ -35,6 +35,7 @@ my %SCRIPT = (
 my %OPTIONS = (
 	color => 'white', # color used for printing short URLs
 );
+my $SHORTENER_URL = "http://is.gd/create.php?format=simple&url=";
 my $TIMEOUT = 30 * 1000;
 my %LOOKUP;
 
@@ -71,7 +72,7 @@ sub command_cb
 	}
 
 	foreach (@URLs) {
-		my $cmd = "wget -qO - \"http://is.gd/create.php?format=simple&url=" . CGI::escape($_) . "\"";
+		my $cmd = "url:$SHORTENER_URL" . CGI::escape($_);
 		$LOOKUP{$cmd} = $_;
 		weechat::hook_process($cmd, $TIMEOUT, "process_cb", $buffer);
 	}
