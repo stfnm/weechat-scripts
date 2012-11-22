@@ -68,14 +68,15 @@ sub command_cb
 	# Otherwise search backwards in lines of current buffer
 	if (@URLs == 0) {
 		# <number>
-		my $count = 1;
+		my $count = 0;
 		$count = $1 if ($args =~ /^(\d+)$/);
 
 		# <partial expr>
 		my $match = "";
-		$match = $1 if ($args =~ /^([a-zA-Z]+)$/);
+		$match = $1 if ($count == 0 && $args =~ /^(\S+)$/);
 
 		my $infolist = weechat::infolist_get("buffer_lines", $buffer, "");
+		$count = 1 if ($count == 0);
 		while (weechat::infolist_prev($infolist) == 1) {
 			my $message = weechat::infolist_string($infolist, "message");
 			while ($message =~ m{(https?://\S+)}gi) {
