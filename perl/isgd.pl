@@ -81,7 +81,7 @@ sub command_cb
 			my $message = weechat::infolist_string($infolist, "message");
 			while ($message =~ m{(https?://\S+)}gi) {
 				my $url = $1;
-				if ($match eq "" || $url =~ /\Q$match\E/) {
+				if ($match eq "" || $url =~ /\Q$match\E/i) {
 					push(@URLs, $url) unless ($url =~ m{^https?://is\.gd/}gi);
 				}
 			}
