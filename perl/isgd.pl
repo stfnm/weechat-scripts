@@ -27,7 +27,7 @@ use CGI;
 my %SCRIPT = (
 	name => 'isgd',
 	author => 'stfn <stfnmd@gmail.com>',
-	version => '0.2',
+	version => '0.3',
 	license => 'GPL3',
 	desc => 'Shorten URLs with is.gd on command',
 	opt => 'plugins.var.perl',
