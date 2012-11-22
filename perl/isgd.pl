@@ -41,10 +41,14 @@ my %LOOKUP;
 
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
 weechat::hook_command($SCRIPT{"name"}, $SCRIPT{"desc"},
-	"[<URL> ...] | [<number>]\n",
+	                    "[<URL> ...]\n" .
+	"                    [<number>]\n",
+	"   URL: URL to shorten (multiple URLs may be given)\n" .
+	"number: shorten up to n last found URLs in current buffer\n\n" .
 	"Without any URL arguments, the last found URL in the current buffer will be shortened.\n\n" .
-	"URL: URL to shorten. More than one URL may be given.\n" .
-	"number: shorten up to last found n URLs in current buffer.",
+	"Examples:\n" .
+	"  /isgd http://google.de\n" .
+	"  /isgd 3",
 	"", "command_cb", "");
 
 init_config();
