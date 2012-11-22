@@ -42,13 +42,16 @@ my %LOOKUP;
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
 weechat::hook_command($SCRIPT{"name"}, $SCRIPT{"desc"},
 	                    "[<URL> ...]\n" .
-	"                    [<number>]\n",
-	"   URL: URL to shorten (multiple URLs may be given)\n" .
-	"number: shorten up to n last found URLs in current buffer\n\n" .
-	"Without any URL arguments, the last found URL in the current buffer will be shortened.\n\n" .
+	"                    [<number>]\n" .
+	"                    [<partial expr>]\n",
+	"         URL: URL to shorten (multiple URLs may be given)\n" .
+	"      number: shorten up to n last found URLs in current buffer\n" .
+	"partial expr: shorten last found URL in current buffer which matches the given partial expression\n" .
+	"\nWithout any URL arguments, the last found URL in the current buffer will be shortened.\n\n" .
 	"Examples:\n" .
 	"  /isgd http://google.de\n" .
-	"  /isgd 3",
+	"  /isgd 3\n" .
+	"  /isgd youtube",
 	"", "command_cb", "");
 
 init_config();
@@ -64,14 +67,22 @@ sub command_cb
 	}
 	# Otherwise search backwards in lines of current buffer
 	if (@URLs == 0) {
+		# <number>
 		my $count = 1;
 		$count = $1 if ($args =~ /^(\d+)$/);
+
+		# <partial expr>
+		my $match = "";
+		$match = $1 if ($args =~ /^([a-zA-Z]+)$/);
+
 		my $infolist = weechat::infolist_get("buffer_lines", $buffer, "");
 		while (weechat::infolist_prev($infolist) == 1) {
 			my $message = weechat::infolist_string($infolist, "message");
 			while ($message =~ m{(https?://\S+)}gi) {
 				my $url = $1;
-				push(@URLs, $url) unless ($url =~ m{^https?://is\.gd/}gi);
+				if ($match eq "" || $url =~ /\Q$match\E/) {
+					push(@URLs, $url) unless ($url =~ m{^https?://is\.gd/}gi);
+				}
 			}
 			last if (@URLs >= $count);
 		}
