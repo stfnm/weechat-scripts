@@ -37,7 +37,7 @@ my %OPTIONS = (
 );
 my $SHORTENER_URL = "http://is.gd/create.php?format=simple&url=";
 my $TIMEOUT = 30 * 1000;
-my %LOOKUP;
+my (%LOOKUP, %CACHE);
 
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
 weechat::hook_command($SCRIPT{"name"}, $SCRIPT{"desc"},
@@ -90,10 +90,17 @@ sub command_cb
 		weechat::infolist_free($infolist);
 	}
 
+	# Now process all found URLs
 	foreach (@URLs) {
-		my $cmd = "url:$SHORTENER_URL" . CGI::escape($_);
-		$LOOKUP{$cmd} = $_;
-		weechat::hook_process($cmd, $TIMEOUT, "process_cb", $buffer);
+		my $url = $_;
+		my $cmd = "url:$SHORTENER_URL" . CGI::escape($url);
+		$LOOKUP{$cmd} = $url;
+
+		if (my $url_short = $CACHE{$cmd}) {
+			print_url($buffer, $url_short, $url);
+		} else {
+			weechat::hook_process($cmd, $TIMEOUT, "process_cb", $buffer);
+		}
 	}
 
 	return weechat::WEECHAT_RC_OK;
@@ -103,10 +110,11 @@ sub process_cb
 {
 	my ($data, $command, $return_code, $out, $err) = @_;
 	my $buffer = $data;
-	my $url = $out;
+	my $url_short = $out;
 
-	if ($return_code == 0 && $url) {
-		print_url($buffer, $url, $LOOKUP{$command});
+	if ($return_code == 0 && $url_short) {
+		$CACHE{$command} = $url_short;
+		print_url($buffer, $url_short, $LOOKUP{$command});
 	}
 
 	return weechat::WEECHAT_RC_OK;
@@ -114,10 +122,10 @@ sub process_cb
 
 sub print_url($$$)
 {
-       my ($buffer, $url, $cmd) = @_;
+       my ($buffer, $url_short, $cmd) = @_;
        my $domain = "";
        $domain = $1 if ($cmd =~  m{^https?://([^/]+)}gi);
-       weechat::print_date_tags($buffer, 0, "no_log", weechat::color($OPTIONS{color}) . "$url ($domain)");
+       weechat::print_date_tags($buffer, 0, "no_log", weechat::color($OPTIONS{color}) . "$url_short ($domain)");
 }
 
 sub init_config
