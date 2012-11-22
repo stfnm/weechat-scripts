@@ -103,14 +103,21 @@ sub process_cb
 {
 	my ($data, $command, $return_code, $out, $err) = @_;
 	my $buffer = $data;
+	my $url = $out;
 
-	if ($return_code == 0 && $out) {
-		my $domain = "";
-		$domain = $1 if ($LOOKUP{$command} =~  m{^https?://([^/]+)}gi);
-		weechat::print_date_tags($buffer, 0, "no_log", weechat::color($OPTIONS{color}) . "$out ($domain)");
+	if ($return_code == 0 && $url) {
+		print_url($buffer, $url, $LOOKUP{$command});
 	}
 
 	return weechat::WEECHAT_RC_OK;
+}
+
+sub print_url($$$)
+{
+       my ($buffer, $url, $cmd) = @_;
+       my $domain = "";
+       $domain = $1 if ($cmd =~  m{^https?://([^/]+)}gi);
+       weechat::print_date_tags($buffer, 0, "no_log", weechat::color($OPTIONS{color}) . "$url ($domain)");
 }
 
 sub init_config
