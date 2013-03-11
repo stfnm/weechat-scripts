@@ -29,7 +29,7 @@ my %SCRIPT = (
 	author => 'stfn <stfnmd@gmail.com>',
 	version => '0.1',
 	license => 'GPL3',
-	desc => 'Notifications using pushover.net',
+	desc => 'Send real-time push notifications to your mobile devices using pushover.net',
 	opt => 'plugins.var.perl',
 );
 my %OPTIONS_DEFAULT = (
