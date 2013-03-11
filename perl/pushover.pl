@@ -74,7 +74,7 @@ sub config_cb
 }
 
 #
-# pushover.net routine
+# Send to pushover.net
 #
 sub pushover
 {
@@ -90,23 +90,22 @@ sub pushover
 	# Send POST request
 	my $hash = { "post"  => 1, "postfields" => join(";", @post) };
 	weechat::hook_process_hashtable("url:https://api.pushover.net/1/messages.json", $hash, 20 * 1000, "", "");
-	#weechat::print("", "pushover debug: @post");
+	#weechat::print("", "[$SCRIPT{name}] debug: postfields -> @post, msg -> $message");
 
 	return weechat::WEECHAT_RC_OK;
 }
 
 #
-# Notify wrapper/helper routine
+# Notification wrapper
 #
 sub notify
 {
 	my $msg = $_[0];
 	pushover($OPTIONS{token}, $OPTIONS{user}, $OPTIONS{sound}, $msg);
-	#weechat::print("", "pushover debug: $msg");
 }
 
 #
-# Messages being printed
+# Catch printed messages
 #
 sub print_cb
 {
