@@ -38,6 +38,7 @@ my %OPTIONS_DEFAULT = (
 	'sound' => ['', "Sound (empty for default)"],
 	'show_highlights' => ['on', 'Notify on highlights'],
 	'show_priv_msg' => ['on', 'Notify on private messages'],
+	'only_if_away' => ['off', 'Notify only if away status is active'],
 );
 my %OPTIONS = ();
 
@@ -110,14 +111,21 @@ sub notify
 sub print_cb
 {
 	my ($data, $buffer, $date, $tags, $displayed, $highlight, $prefix, $message) = @_;
+
 	my $buffer_type = weechat::buffer_get_string($buffer, "localvar_type");
+	my $away_msg = weechat::buffer_get_string($buffer, "localvar_away");
+	my $away = ($away_msg && length($away_msg) > 0) ? 1 : 0;
 
 	if ($OPTIONS{show_priv_msg} eq "on" && $buffer_type eq "private") {
 		# Private message
-		notify("<$prefix> $message");
+		if ($OPTIONS{only_if_away} eq "off" || $away) {
+			notify("<$prefix> $message");
+		}
 	} elsif ($OPTIONS{show_highlights} eq "on" && $highlight == 1) {
 		# Highlight
-		notify("<$prefix> $message");
+		if ($OPTIONS{only_if_away} eq "off" || $away) {
+			notify("<$prefix> $message");
+		}
 	}
 
 	return weechat::WEECHAT_RC_OK;
