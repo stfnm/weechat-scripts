@@ -118,18 +118,20 @@ sub print_cb
 	}
 
 	my $buffer_type = weechat::buffer_get_string($buffer, "localvar_type");
+	my $buffer_name = weechat::buffer_get_string($buffer, "name");
+	my $buffer_shortname = weechat::buffer_get_string($buffer, "short_name");
 	my $away_msg = weechat::buffer_get_string($buffer, "localvar_away");
-	my $away = ($away_msg && length($away_msg) > 0) ? 1 : 0;
 
-	if ($OPTIONS{show_priv_msg} eq "on" && $buffer_type eq "private") {
-		# Private message
-		if ($OPTIONS{only_if_away} eq "off" || $away) {
-			notify("<$prefix> $message");
-		}
-	} elsif ($OPTIONS{show_highlights} eq "on" && $highlight == 1) {
-		# Highlight
-		if ($OPTIONS{only_if_away} eq "off" || $away) {
-			notify("<$prefix> $message");
+	my $away = ($away_msg && length($away_msg) > 0) ? 1 : 0;
+	my $name = ($buffer_shortname && length($buffer_shortname) > 0) ? $buffer_shortname : $buffer_name;
+
+	if ($OPTIONS{only_if_away} eq "off" || $away) {
+		if ($OPTIONS{show_priv_msg} eq "on" && $buffer_type eq "private") {
+			# Private message
+			notify("[$name] <$prefix> $message");
+		} elsif ($OPTIONS{show_highlights} eq "on" && $highlight == 1) {
+			# Highlight
+			notify("[$name] <$prefix> $message");
 		}
 	}
 
