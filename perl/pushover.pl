@@ -36,6 +36,7 @@ my %OPTIONS_DEFAULT = (
 	'token' => ['', 'API Token/Key'],
 	'user' => ['', "User Key"],
 	'sound' => ['', "Sound (empty for default)"],
+	'enabled' => ['on', "Turn script on or off"],
 	'show_highlights' => ['on', 'Notify on highlights'],
 	'show_priv_msg' => ['on', 'Notify on private messages'],
 	'only_if_away' => ['off', 'Notify only if away status is active'],
@@ -111,6 +112,10 @@ sub notify
 sub print_cb
 {
 	my ($data, $buffer, $date, $tags, $displayed, $highlight, $prefix, $message) = @_;
+
+	if ($OPTIONS{enabled} ne "on") {
+		return weechat::WEECHAT_RC_OK;
+	}
 
 	my $buffer_type = weechat::buffer_get_string($buffer, "localvar_type");
 	my $away_msg = weechat::buffer_get_string($buffer, "localvar_away");
