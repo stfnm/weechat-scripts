@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2011-2012  stfn <stfnmd@gmail.com>
+# Copyright (C) 2011-2013  stfn <stfnmd@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,17 +29,20 @@ my %SCRIPT = (
 	author => 'stfn <stfnmd@gmail.com>',
 	version => '0.3',
 	license => 'GPL3',
-	desc => 'Shorten URLs with is.gd on command',
+	desc => 'Shorten URLs with is.gd on demand or automatically',
 	opt => 'plugins.var.perl',
 );
-my %OPTIONS = (
-	color => 'white', # color used for printing short URLs
+my %OPTIONS_DEFAULT = (
+	'color' => ['white', 'Color used for printing shortened URLs'],
+	'auto' => ['off', 'Shorten all incoming URLs automatically'],
 );
+my %OPTIONS = ();
 my $SHORTENER_URL = "http://is.gd/create.php?format=simple&url=";
 my $TIMEOUT = 30 * 1000;
 my (%LOOKUP, %CACHE);
 
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
+weechat::hook_print("", "irc_privmsg", "", 1, "print_cb", "");
 weechat::hook_command($SCRIPT{"name"}, $SCRIPT{"desc"},
 	                    "[<URL> ...]\n" .
 	"                    [<number>]\n" .
@@ -56,6 +59,33 @@ weechat::hook_command($SCRIPT{"name"}, $SCRIPT{"desc"},
 
 init_config();
 
+#
+# Catch printed messages
+#
+sub print_cb
+{
+	my ($data, $buffer, $date, $tags, $displayed, $highlight, $prefix, $message) = @_;
+	my @URLs;
+
+	if ($OPTIONS{auto} ne "on" || $tags =~ /\bno_log\b/) {
+		return weechat::WEECHAT_RC_OK;
+	}
+
+	# Find URLs
+	while ($message =~ m{(https?://\S+)}gi) {
+		my $url = $1;
+		push(@URLs, $url);
+	}
+
+	# Process all found URLs
+	shorten_urls(\@URLs, $buffer);
+
+	return weechat::WEECHAT_RC_OK;
+}
+
+#
+# /isgd
+#
 sub command_cb
 {
 	my ($data, $buffer, $args) = @_;
@@ -79,10 +109,11 @@ sub command_cb
 		$count = 1 if ($count == 0);
 		while (weechat::infolist_prev($infolist) == 1) {
 			my $message = weechat::infolist_string($infolist, "message");
+			my $tags = weechat::infolist_string($infolist, "tags");
 			while ($message =~ m{(https?://\S+)}gi) {
 				my $url = $1;
 				if ($match eq "" || $url =~ /\Q$match\E/i) {
-					push(@URLs, $url) unless ($url =~ m{^https?://is\.gd/}gi);
+					push(@URLs, $url) unless ($tags =~ /\bno_log\b/);
 				}
 			}
 			last if (@URLs >= $count);
@@ -91,6 +122,19 @@ sub command_cb
 	}
 
 	# Now process all found URLs
+	shorten_urls(\@URLs, $buffer);
+
+	return weechat::WEECHAT_RC_OK;
+}
+
+#
+# Shortens a list of URLs
+#
+sub shorten_urls($$)
+{
+	my @URLs = @{$_[0]};
+	my $buffer = $_[1];
+
 	foreach (@URLs) {
 		my $url = $_;
 		my $cmd = "url:$SHORTENER_URL" . CGI::escape($url);
@@ -102,8 +146,6 @@ sub command_cb
 			weechat::hook_process($cmd, $TIMEOUT, "process_cb", $buffer);
 		}
 	}
-
-	return weechat::WEECHAT_RC_OK;
 }
 
 sub process_cb
@@ -128,14 +170,22 @@ sub print_url($$$)
        weechat::print_date_tags($buffer, 0, "no_log", weechat::color($OPTIONS{color}) . "$url_short ($domain)");
 }
 
+#
+# Handle config stuff
+#
 sub init_config
 {
 	weechat::hook_config("$SCRIPT{'opt'}.$SCRIPT{'name'}.*", "config_cb", "");
-	foreach my $option (keys %OPTIONS) {
+	my $version = weechat::info_get("version_number", "") || 0;
+	foreach my $option (keys %OPTIONS_DEFAULT) {
 		if (!weechat::config_is_set_plugin($option)) {
-			weechat::config_set_plugin($option, $OPTIONS{$option});
+			weechat::config_set_plugin($option, $OPTIONS_DEFAULT{$option}[0]);
+			$OPTIONS{$option} = $OPTIONS_DEFAULT{$option}[0];
 		} else {
 			$OPTIONS{$option} = weechat::config_get_plugin($option);
+		}
+		if ($version >= 0x00030500) {
+			weechat::config_set_desc_plugin($option, $OPTIONS_DEFAULT{$option}[1]." (default: \"".$OPTIONS_DEFAULT{$option}[0]."\")");
 		}
 	}
 }
@@ -143,8 +193,7 @@ sub init_config
 sub config_cb
 {
 	my ($pointer, $name, $value) = @_;
-	$name = substr($name, length("$SCRIPT{'opt'}.$SCRIPT{'name'}."), length($name));
+	$name = substr($name, length("$SCRIPT{opt}.$SCRIPT{name}."), length($name));
 	$OPTIONS{$name} = $value;
-
 	return weechat::WEECHAT_RC_OK;
 }
