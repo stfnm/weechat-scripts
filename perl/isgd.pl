@@ -27,7 +27,7 @@ use CGI;
 my %SCRIPT = (
 	name => 'isgd',
 	author => 'stfn <stfnmd@gmail.com>',
-	version => '0.3',
+	version => '0.4',
 	license => 'GPL3',
 	desc => 'Shorten URLs with is.gd on demand or automatically',
 	opt => 'plugins.var.perl',
@@ -42,7 +42,7 @@ my $TIMEOUT = 30 * 1000;
 my (%LOOKUP, %CACHE);
 
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
-weechat::hook_print("", "irc_privmsg", "", 1, "print_cb", "");
+weechat::hook_print("", "", "", 1, "print_cb", "");
 weechat::hook_command($SCRIPT{"name"}, $SCRIPT{"desc"},
 	                    "[<URL> ...]\n" .
 	"                    [<number>]\n" .
