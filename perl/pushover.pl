@@ -27,7 +27,7 @@ use CGI;
 my %SCRIPT = (
 	name => 'pushover',
 	author => 'stfn <stfnmd@gmail.com>',
-	version => '0.2',
+	version => '0.3',
 	license => 'GPL3',
 	desc => 'Send real-time push notifications to your mobile devices using pushover.net',
 	opt => 'plugins.var.perl',
@@ -126,23 +126,19 @@ sub print_cb
 	}
 
 	my @blacklist = split(/,/, $OPTIONS{blacklist});
-
 	my $buffer_type = weechat::buffer_get_string($buffer, "localvar_type");
 	my $buffer_name = weechat::buffer_get_string($buffer, "name");
 	my $buffer_shortname = weechat::buffer_get_string($buffer, "short_name");
 	my $away_msg = weechat::buffer_get_string($buffer, "localvar_away");
-
 	my $away = ($away_msg && length($away_msg) > 0) ? 1 : 0;
-	my $name = ($buffer_shortname && length($buffer_shortname) > 0) ? $buffer_shortname : $buffer_name;
 
+	# Away or blacklisted?
 	if (($OPTIONS{only_if_away} eq "off" || $away) && (@blacklist == 0 ||
-	    (!grep_array($buffer_name, \@blacklist) && !grep_array($buffer_shortname, \@blacklist)))) {
-		if ($OPTIONS{show_priv_msg} eq "on" && $buffer_type eq "private") {
-			# Private message
-			notify("[$name] <$prefix> $message");
-		} elsif ($OPTIONS{show_highlights} eq "on" && $highlight == 1) {
-			# Highlight
-			notify("[$name] <$prefix> $message");
+		(!grep_array($buffer_name, \@blacklist) && !grep_array($buffer_shortname, \@blacklist)))) {
+		# Private message or highlight?
+		if (($OPTIONS{show_priv_msg} eq "on" && $buffer_type eq "private") ||
+			($OPTIONS{show_highlights} eq "on" && $highlight == 1)) {
+			notify("[$buffer_shortname] <$prefix> $message"); # Send notification
 		}
 	}
 
