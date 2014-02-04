@@ -66,8 +66,9 @@ sub print_cb
 {
 	my ($data, $buffer, $date, $tags, $displayed, $highlight, $prefix, $message) = @_;
 	my @URLs;
+	my $self_nick = weechat::buffer_get_string($buffer, "localvar_nick");
 
-	if ($OPTIONS{auto} ne "on" || $tags =~ /\bno_log\b/) {
+	if ($OPTIONS{auto} ne "on" || $tags =~ /\bno_log\b/ || $tags =~ /\birc_332\b/ || $tags =~ /\bnick_\Q$self_nick\E\b/) {
 		return weechat::WEECHAT_RC_OK;
 	}
 
