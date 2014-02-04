@@ -1258,11 +1258,11 @@ sub iset_config_init
     $options_iset{"color_value_diff"} = weechat::config_new_option(
         $iset_config_file, $section_color,
         "value_diff", "color", "Color for option value different from default", "", 0, 0,
-        "blue", "blue", 0, "", "", "full_refresh_cb", "", "", "");
+        "magenta", "magenta", 0, "", "", "full_refresh_cb", "", "", "");
     $options_iset{"color_value_diff_selected"} = weechat::config_new_option(
         $iset_config_file, $section_color,
         "value_diff_selected", "color", "Color for selected option value different from default", "", 0, 0,
-        "lightblue", "lightblue", 0, "", "", "full_refresh_cb", "", "", "");
+        "lightmagenta", "lightmagenta", 0, "", "", "full_refresh_cb", "", "", "");
     $options_iset{"color_value_undef"} = weechat::config_new_option(
         $iset_config_file, $section_color,
         "value_undef", "color", "Color for option value undef", "", 0, 0,
