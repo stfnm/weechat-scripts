@@ -182,7 +182,7 @@ sub notify_nma($$$$$)
 	push(@post, "priority=" . CGI::escape($priority)) if ($priority && length($priority) > 0);
 
 	# Send HTTP POST
-	my $hash = { "post"  => 1, "postfields" => join(";", @post) };
+	my $hash = { "post"  => 1, "postfields" => join("&", @post) };
 	if ($DEBUG) {
 		weechat::print("", "[$SCRIPT{name}] Debug: msg -> `$description' HTTP POST -> @post");
 	} else {
