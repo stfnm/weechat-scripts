@@ -89,13 +89,13 @@ sub spin_signal
 	my $user = $signal_data;
 
 	if ($signal eq "spin_new_mail") {
-		notify_default("$user mailed you.");
+		notify("$user mailed you.");
 	} elsif ($signal eq "spin_new_gift") {
-		notify_default("$user sent you a gift.");
+		notify("$user sent you a gift.");
 	} elsif ($signal eq "spin_new_gb") {
-		notify_default("$user left you a new GB entry.");
+		notify("$user left you a new GB entry.");
 	} elsif ($signal eq "spin_new_comment") {
-		notify_default("$user left you a new comment.");
+		notify("$user left you a new comment.");
 	}
 }
 
