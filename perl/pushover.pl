@@ -103,9 +103,9 @@ sub print_cb
 	my @blacklist = split(/,/, $OPTIONS{blacklist});
 
 	if ($OPTIONS{enabled} ne "on" ||
-	   ($OPTIONS{only_if_away} eq "on" && $away == 0) ||
-	   $displayed == 0 ||
-	   (grep_array($buffer_name, \@blacklist) || grep_array($buffer_short_name, \@blacklist))) {
+	    $displayed == 0 ||
+	    ($OPTIONS{only_if_away} eq "on" && $away == 0) ||
+	    (grep_array($buffer_name, \@blacklist) || grep_array($buffer_short_name, \@blacklist))) {
 		return weechat::WEECHAT_RC_OK;
 	}
 
@@ -123,6 +123,9 @@ sub print_cb
 	return weechat::WEECHAT_RC_OK;
 }
 
+#
+# Catch API responses
+#
 sub url_cb
 {
 	my ($data, $command, $return_code, $out, $err) = @_;
