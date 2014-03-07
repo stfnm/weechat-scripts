@@ -42,7 +42,7 @@ my %OPTIONS_DEFAULT = (
 	'blacklist' => ['', 'Comma separated list of buffers to blacklist for notifications'],
 );
 my %OPTIONS = ();
-my $DEBUG = 1;
+my $DEBUG = 0;
 my $TIMEOUT = 30 * 1000;
 
 # Register script and setup hooks
