@@ -102,13 +102,10 @@ sub print_cb
 	my $away = ($away_msg && length($away_msg) > 0) ? 1 : 0;
 	my @blacklist = split(/,/, $OPTIONS{blacklist});
 
-	# Script disabled for any reason?
-	if ($OPTIONS{enabled} ne "on" || ($OPTIONS{only_if_away} eq "on" && $away == 0)) {
-		return weechat::WEECHAT_RC_OK;
-	}
-
-	# Something blacklisted?
-	if (grep_array($buffer_name, \@blacklist) || grep_array($buffer_short_name, \@blacklist)) {
+	if ($OPTIONS{enabled} ne "on" ||
+	   ($OPTIONS{only_if_away} eq "on" && $away == 0) ||
+	   $displayed == 0 ||
+	   (grep_array($buffer_name, \@blacklist) || grep_array($buffer_short_name, \@blacklist))) {
 		return weechat::WEECHAT_RC_OK;
 	}
 
