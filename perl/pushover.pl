@@ -23,9 +23,9 @@ use CGI;
 my %SCRIPT = (
 	name => 'pushover',
 	author => 'stfn <stfnmd@gmail.com>',
-	version => '0.4',
+	version => '0.5',
 	license => 'GPL3',
-	desc => 'Send push notifications to your mobile devices using pushover or nma',
+	desc => 'Send push notifications to your mobile devices using Pushover or NMA',
 	opt => 'plugins.var.perl',
 );
 my %OPTIONS_DEFAULT = (
