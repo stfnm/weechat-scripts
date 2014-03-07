@@ -126,6 +126,20 @@ sub print_cb
 	return weechat::WEECHAT_RC_OK;
 }
 
+sub url_cb
+{
+	my ($data, $command, $return_code, $out, $err) = @_;
+	my $msg = "[$SCRIPT{name}] Error: @_";
+
+	if ($OPTIONS{service} eq "pushover" && $return_code == 0 && !($out =~ /\"status\":1/)) {
+		weechat::print("", $msg);
+	} elsif ($OPTIONS{service} eq "nma" && $return_code == 0 && !($out =~ /success code=\"200\"/)) {
+		weechat::print("", $msg);
+	}
+
+	return weechat::WEECHAT_RC_OK;
+}
+
 #
 # Notify wrapper (decides which service to use)
 #
@@ -165,7 +179,7 @@ sub notify_pushover($$$$$$)
 	if ($DEBUG) {
 		weechat::print("", "[$SCRIPT{name}] Debug: msg -> `$message' HTTP POST -> @post");
 	} else {
-		weechat::hook_process_hashtable("url:https://api.pushover.net/1/messages.json", $hash, $TIMEOUT, "", "");
+		weechat::hook_process_hashtable("url:https://api.pushover.net/1/messages.json", $hash, $TIMEOUT, "url_cb", "");
 	}
 
 	return weechat::WEECHAT_RC_OK;
@@ -194,7 +208,7 @@ sub notify_nma($$$$$)
 	if ($DEBUG) {
 		weechat::print("", "[$SCRIPT{name}] Debug: msg -> `$description' HTTP POST -> @post");
 	} else {
-		weechat::hook_process_hashtable("url:https://www.notifymyandroid.com/publicapi/notify", $hash, $TIMEOUT, "", "");
+		weechat::hook_process_hashtable("url:https://www.notifymyandroid.com/publicapi/notify", $hash, $TIMEOUT, "url_cb", "");
 	}
 
 	return weechat::WEECHAT_RC_OK;
