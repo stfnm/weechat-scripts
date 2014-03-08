@@ -115,7 +115,7 @@ sub print_cb
 	if ($OPTIONS{show_highlights} eq "on" && $highlight == 1) {
 		# Message with highlight
 		notify($msg);
-	} elsif ($OPTIONS{show_priv_msg} eq "on" && $buffer_type eq "private") {
+	} elsif ($OPTIONS{show_priv_msg} eq "on" && $buffer_type eq "private" && $tags =~ /(^|,)notify_private(,|$)/) {
 		# Private message
 		notify($msg);
 	}
