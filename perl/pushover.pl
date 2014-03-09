@@ -47,7 +47,7 @@ my $TIMEOUT = 30 * 1000;
 
 # Register script and setup hooks
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
-weechat::hook_print("", "", "", 1, "print_cb", "");
+weechat::hook_print("", "notify_message,notify_private,notify_highlight", "", 1, "print_cb", "");
 init_config();
 
 #
@@ -115,7 +115,7 @@ sub print_cb
 	if ($OPTIONS{show_highlights} eq "on" && $highlight == 1) {
 		# Message with highlight
 		notify($msg);
-	} elsif ($OPTIONS{show_priv_msg} eq "on" && $buffer_type eq "private" && $tags =~ /(^|,)notify_private(,|$)/) {
+	} elsif ($OPTIONS{show_priv_msg} eq "on" && $buffer_type eq "private") {
 		# Private message
 		notify($msg);
 	}
