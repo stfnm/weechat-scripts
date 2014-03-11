@@ -79,13 +79,13 @@ sub config_cb
 }
 
 #
-# Case insensitive search for array element
+# Case insensitive search for element in comma separated list
 #
-sub grep_array($$)
+sub grep_list($$)
 {
-	my ($str, $array_ref) = @_;
-	my @array = @{$array_ref};
-	return (grep {$_ =~ /^\Q$str\E$/i} @array) ? 1 : 0;
+	my ($str, $list) = @_;
+	my @array = split(/,/, $list);
+	return grep(/^\Q$str\E$/i, @array) ? 1 : 0;
 }
 
 #
@@ -101,13 +101,12 @@ sub print_cb
 	my $buffer_short_name = weechat::buffer_get_string($buffer, "short_name");
 	my $away_msg = weechat::buffer_get_string($buffer, "localvar_away");
 	my $away = ($away_msg && length($away_msg) > 0) ? 1 : 0;
-	my @blacklist = split(/,/, $OPTIONS{blacklist});
 
 	if ($OPTIONS{enabled} ne "on" ||
 	    $displayed == 0 ||
 	    ($OPTIONS{only_if_away} eq "on" && $away == 0) ||
 	    ($OPTIONS{only_if_inactive} eq "on" && $buffer eq weechat::current_buffer()) ||
-	    (grep_array($buffer_name, \@blacklist) || grep_array($buffer_short_name, \@blacklist))) {
+	    (grep_list($buffer_name, $OPTIONS{blacklist}) || grep_list($buffer_short_name, $OPTIONS{blacklist}))) {
 		return weechat::WEECHAT_RC_OK;
 	}
 
