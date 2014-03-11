@@ -30,7 +30,7 @@ my %SCRIPT = (
 );
 my %OPTIONS_DEFAULT = (
 	'enabled' => ['on', "Turn script on or off"],
-	'service' => ['pushover', 'Notification service to use (supported services: pushover, nma)'],
+	'service' => ['pushover', 'Notification service to use. Multiple services may be supplied as comma separated list. (supported services: pushover, nma)'],
 	'token' => ['ajEX9RWhxs6NgeXFJxSK2jmpY54C9S', 'pushover API token/key'],
 	'user' => ['', "pushover user key"],
 	'nma_apikey' => ['', "nma API key"],
@@ -132,9 +132,9 @@ sub url_cb
 	my ($data, $command, $return_code, $out, $err) = @_;
 	my $msg = "[$SCRIPT{name}] Error: @_";
 
-	if ($OPTIONS{service} eq "pushover" && $return_code == 0 && !($out =~ /\"status\":1/)) {
+	if ($command =~ /pushover/ && $return_code == 0 && !($out =~ /\"status\":1/)) {
 		weechat::print("", $msg);
-	} elsif ($OPTIONS{service} eq "nma" && $return_code == 0 && !($out =~ /success code=\"200\"/)) {
+	} elsif ($command =~ /notifymyandroid/ && $return_code == 0 && !($out =~ /success code=\"200\"/)) {
 		weechat::print("", $msg);
 	}
 
@@ -148,10 +148,11 @@ sub notify($)
 {
 	my $message = $_[0];
 
-	# Notify service
-	if ($OPTIONS{service} eq "pushover") {
+	# Notify services
+	if (grep_list("pushover", $OPTIONS{service})) {
 		notify_pushover($OPTIONS{token}, $OPTIONS{user}, $message, "weechat", $OPTIONS{priority}, $OPTIONS{sound});
-	} elsif ($OPTIONS{service} eq "nma") {
+	}
+	if (grep_list("nma", $OPTIONS{service})) {
 		notify_nma($OPTIONS{nma_apikey}, "weechat", "notification", $message, $OPTIONS{priority});
 	}
 }
