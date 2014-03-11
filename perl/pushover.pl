@@ -39,6 +39,7 @@ my %OPTIONS_DEFAULT = (
 	'show_highlights' => ['on', 'Notify on highlights'],
 	'show_priv_msg' => ['on', 'Notify on private messages'],
 	'only_if_away' => ['off', 'Notify only if away status is active'],
+	'only_if_inactive' => ['off', 'Notify only if buffer is not the active (current) buffer'],
 	'blacklist' => ['', 'Comma separated list of buffers to blacklist for notifications'],
 );
 my %OPTIONS = ();
@@ -105,6 +106,7 @@ sub print_cb
 	if ($OPTIONS{enabled} ne "on" ||
 	    $displayed == 0 ||
 	    ($OPTIONS{only_if_away} eq "on" && $away == 0) ||
+	    ($OPTIONS{only_if_inactive} eq "on" && $buffer eq weechat::current_buffer()) ||
 	    (grep_array($buffer_name, \@blacklist) || grep_array($buffer_short_name, \@blacklist))) {
 		return weechat::WEECHAT_RC_OK;
 	}
