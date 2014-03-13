@@ -95,10 +95,10 @@ sub print_cb
 {
 	my ($data, $buffer, $date, $tags, $displayed, $highlight, $prefix, $message) = @_;
 
-	my $buffer_plugin_name = weechat::buffer_get_string($buffer, "localvar_plugin");
 	my $buffer_type = weechat::buffer_get_string($buffer, "localvar_type");
 	my $buffer_name = weechat::buffer_get_string($buffer, "name");
 	my $buffer_short_name = weechat::buffer_get_string($buffer, "short_name");
+	my $buffer_full_name = weechat::buffer_get_string($buffer, "full_name");
 	my $away_msg = weechat::buffer_get_string($buffer, "localvar_away");
 	my $away = ($away_msg && length($away_msg) > 0) ? 1 : 0;
 
@@ -110,7 +110,7 @@ sub print_cb
 		return weechat::WEECHAT_RC_OK;
 	}
 
-	my $msg = "[$buffer_plugin_name] [$buffer_name] <$prefix> $message";
+	my $msg = "[$buffer_full_name] <$prefix> $message";
 
 	# Notify!
 	if ($OPTIONS{show_highlights} eq "on" && $highlight == 1) {
@@ -153,7 +153,7 @@ sub notify($)
 		notify_pushover($OPTIONS{token}, $OPTIONS{user}, $message, "weechat", $OPTIONS{priority}, $OPTIONS{sound});
 	}
 	if (grep_list("nma", $OPTIONS{service})) {
-		notify_nma($OPTIONS{nma_apikey}, "weechat", "notification", $message, $OPTIONS{priority});
+		notify_nma($OPTIONS{nma_apikey}, "weechat", $SCRIPT{name}, $message, $OPTIONS{priority});
 	}
 }
 
