@@ -40,7 +40,7 @@ my %OPTIONS_DEFAULT = (
 	'show_priv_msg' => ['on', 'Notify on private messages'],
 	'only_if_away' => ['off', 'Notify only if away status is active'],
 	'only_if_inactive' => ['off', 'Notify only if buffer is not the active (current) buffer'],
-	'blacklist' => ['', 'Comma separated list of buffers to blacklist for notifications'],
+	'blacklist' => ['', 'Comma separated list of buffers (full name or short name) to blacklist for notifications'],
 );
 my %OPTIONS = ();
 my $DEBUG = 0;
@@ -96,7 +96,6 @@ sub print_cb
 	my ($data, $buffer, $date, $tags, $displayed, $highlight, $prefix, $message) = @_;
 
 	my $buffer_type = weechat::buffer_get_string($buffer, "localvar_type");
-	my $buffer_name = weechat::buffer_get_string($buffer, "name");
 	my $buffer_short_name = weechat::buffer_get_string($buffer, "short_name");
 	my $buffer_full_name = weechat::buffer_get_string($buffer, "full_name");
 	my $away_msg = weechat::buffer_get_string($buffer, "localvar_away");
@@ -106,7 +105,7 @@ sub print_cb
 	    $displayed == 0 ||
 	    ($OPTIONS{only_if_away} eq "on" && $away == 0) ||
 	    ($OPTIONS{only_if_inactive} eq "on" && $buffer eq weechat::current_buffer()) ||
-	    (grep_list($buffer_name, $OPTIONS{blacklist}) || grep_list($buffer_short_name, $OPTIONS{blacklist}))) {
+	    (grep_list($buffer_full_name, $OPTIONS{blacklist}) || grep_list($buffer_short_name, $OPTIONS{blacklist}))) {
 		return weechat::WEECHAT_RC_OK;
 	}
 
