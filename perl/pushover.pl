@@ -153,7 +153,7 @@ sub notify($)
 		notify_pushover($OPTIONS{token}, $OPTIONS{user}, $message, "weechat", $OPTIONS{priority}, $OPTIONS{sound});
 	}
 	if (grep_list("nma", $OPTIONS{service})) {
-		notify_nma($OPTIONS{nma_apikey}, "weechat", $SCRIPT{name}, $message, $OPTIONS{priority});
+		notify_nma($OPTIONS{nma_apikey}, "weechat", "$SCRIPT{name}.pl", $message, $OPTIONS{priority});
 	}
 }
 
