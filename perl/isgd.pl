@@ -229,7 +229,7 @@ sub grep_urls($$)
 	my $str = $_[0];
 	my $url_min_length = $_[1];
 	my @urls;
-	while ($str =~ m{(https?://\S+)}gi) {
+	while ($str =~ m{(https?://.+?)(\s|"|>|$)}gi) {
 		my $url = $1;
 		push(@urls, $url) unless ($url =~ /^\Q$SHORTENER_BASE\E/ || length($url) < $url_min_length);
 	}
