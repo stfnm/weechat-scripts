@@ -77,7 +77,7 @@ sub print_cb
 	@URLs = grep_urls($message, $OPTIONS{auto_min_length});
 
 	# Process all found URLs
-	shorten_urls(\@URLs, $buffer);
+	shorten_urls(\@URLs, $buffer, 0);
 
 	return weechat::WEECHAT_RC_OK;
 }
