@@ -41,6 +41,7 @@ my %OPTIONS_DEFAULT = (
 	'only_if_away' => ['off', 'Notify only if away status is active'],
 	'only_if_inactive' => ['off', 'Notify only if buffer is not the active (current) buffer'],
 	'blacklist' => ['', 'Comma separated list of buffers (full name or short name) to blacklist for notifications'],
+	'errorlevel' => ['2', 'Display error messages (0 = silently ignore any errors, 1 = display brief error, 2 = display full server response)'],
 );
 my %OPTIONS = ();
 my $DEBUG = 0;
@@ -129,8 +130,19 @@ sub print_cb
 sub url_cb
 {
 	my ($data, $command, $return_code, $out, $err) = @_;
-	my $msg = "[$SCRIPT{name}] Error: @_";
+	my $msg = "[$SCRIPT{name}] Error: ";
 
+	# Check errorlevel
+	if ($OPTIONS{errorlevel} == 0) {
+		return weechat::WEECHAT_RC_OK;
+	} elsif ($OPTIONS{errorlevel} == 1) {
+		$msg .= "API call failed. (Most likely the service is having trouble.)";
+
+	} elsif ($OPTIONS{errorlevel} == 2) {
+		$msg .= "@_";
+	}
+
+	# Check server response
 	if ($command =~ /pushover/ && $return_code == 0 && !($out =~ /\"status\":1/)) {
 		weechat::print("", $msg);
 	} elsif ($command =~ /notifymyandroid/ && $return_code == 0 && !($out =~ /success code=\"200\"/)) {
