@@ -25,7 +25,7 @@ my %SCRIPT = (
 	author => 'stfn <stfnmd@gmail.com>',
 	version => '0.7',
 	license => 'GPL3',
-	desc => 'Send push notifications to your mobile devices using Pushover or NMA',
+	desc => 'Send push notifications to your mobile devices using Pushover, NMA or Pushbullet',
 	opt => 'plugins.var.perl',
 );
 my %OPTIONS_DEFAULT = (
@@ -43,7 +43,7 @@ my %OPTIONS_DEFAULT = (
 	'only_if_away' => ['off', 'Notify only if away status is active'],
 	'only_if_inactive' => ['off', 'Notify only if buffer is not the active (current) buffer'],
 	'blacklist' => ['', 'Comma separated list of buffers (full name or short name) to blacklist for notifications'],
-	'errorlevel' => ['2', 'Display error messages (0 = silently ignore any errors, 1 = display brief error, 2 = display full server response)'],
+	'verbose' => ['2', 'Verbosity level (0 = silently ignore any errors, 1 = display brief error, 2 = display full server response)'],
 );
 my %OPTIONS = ();
 my $DEBUG = 0;
@@ -134,17 +134,17 @@ sub url_cb
 	my ($data, $command, $return_code, $out, $err) = @_;
 	my $msg = "[$SCRIPT{name}] Error: ";
 
-	# Check errorlevel
-	if ($OPTIONS{errorlevel} == 0) {
-		return weechat::WEECHAT_RC_OK;
-	} elsif ($OPTIONS{errorlevel} == 1) {
+	# Check verbosity level
+	if ($OPTIONS{verbose} == 0) {
+		return weechat::WEECHAT_RC_OK; # Don't display anything
+	} elsif ($OPTIONS{verbose} == 1) {
 		$msg .= "API call failed. (Most likely the service is having trouble.)";
 
-	} elsif ($OPTIONS{errorlevel} == 2) {
+	} elsif ($OPTIONS{verbose} == 2) {
 		$msg .= "@_";
 	}
 
-	# Check server response
+	# Check server response and display error message if NOT successful
 	if ($command =~ /pushover/ && $return_code == 0 && !($out =~ /\"status\":1/)) {
 		weechat::print("", $msg);
 	} elsif ($command =~ /notifymyandroid/ && $return_code == 0 && !($out =~ /success code=\"200\"/)) {
@@ -234,6 +234,9 @@ sub notify_nma($$$$$)
 	return weechat::WEECHAT_RC_OK;
 }
 
+#
+# https://www.pushbullet.com/api
+#
 sub notify_pushbullet($$$$)
 {
 	my ($apikey, $device_iden, $title, $body) = @_;
