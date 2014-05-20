@@ -32,10 +32,9 @@ my %OPTIONS_DEFAULT = (
 	'color' => ['white', 'Color used for printing shortened URLs'],
 	'auto' => ['off', 'Shorten all incoming URLs automatically'],
 	'auto_min_length' => ['1', 'Only shorten incoming URLs automatically which have this minimum length'],
+	'service' => ['is.gd', 'URL shortening service to use (supported services: is.gd, v.gd)'],
 );
 my %OPTIONS = ();
-my $SHORTENER_URL = "http://is.gd/create.php?format=simple&url=";
-my $SHORTENER_BASE = "http://is.gd/";
 my $TIMEOUT = 30 * 1000;
 my $CACHE_MAX_SIZE = 128;
 my (%LOOKUP, %CACHE);
@@ -157,7 +156,8 @@ sub shorten_urls($$$)
 
 	foreach (@URLs) {
 		my $url = $_;
-		my $cmd = "url:$SHORTENER_URL" . CGI::escape($url);
+		my $shortener_url = get_service(0);
+		my $cmd = "url:$shortener_url" . CGI::escape($url);
 		$LOOKUP{$cmd} = $url;
 
 		if (my $url_short = $CACHE{$cmd}) {
@@ -224,6 +224,18 @@ sub url_input_cb
 	return weechat::WEECHAT_RC_OK;
 }
 
+sub get_service($)
+{
+	my $base = $_[0];
+
+	if ($OPTIONS{service} eq "v.gd") {
+		return $base ? "http://v.gd/" : "http://v.gd/create.php?format=simple&url=";
+	}
+
+	# always default to is.gd service
+	return $base ? "http://is.gd/" : "http://is.gd/create.php?format=simple&url=";
+}
+
 sub grep_urls($$)
 {
 	my $str = $_[0];
@@ -231,7 +243,8 @@ sub grep_urls($$)
 	my @urls;
 	while ($str =~ m{(https?://.+?)(\s|"|>|$)}gi) {
 		my $url = $1;
-		push(@urls, $url) unless ($url =~ /^\Q$SHORTENER_BASE\E/ || length($url) < $url_min_length);
+		my $shortener_base = get_service(1);
+		push(@urls, $url) unless ($url =~ /^\Q$shortener_base\E/ || length($url) < $url_min_length);
 	}
 	return @urls;
 }
