@@ -43,7 +43,7 @@ my %OPTIONS_DEFAULT = (
 	'only_if_away' => ['off', 'Notify only if away status is active'],
 	'only_if_inactive' => ['off', 'Notify only if buffer is not the active (current) buffer'],
 	'blacklist' => ['', 'Comma separated list of buffers (full name) to blacklist for notifications (wildcard "*" is allowed, name beginning with "!" is excluded)'],
-	'verbose' => ['2', 'Verbosity level (0 = silently ignore any errors, 1 = display brief error, 2 = display full server response)'],
+	'verbose' => ['1', 'Verbosity level (0 = silently ignore any errors, 1 = display brief error, 2 = display full server response)'],
 );
 my %OPTIONS = ();
 my $DEBUG = 0;
