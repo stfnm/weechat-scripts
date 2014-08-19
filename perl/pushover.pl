@@ -23,7 +23,7 @@ use CGI;
 my %SCRIPT = (
 	name => 'pushover',
 	author => 'stfn <stfnmd@gmail.com>',
-	version => '0.8',
+	version => '0.9',
 	license => 'GPL3',
 	desc => 'Send push notifications to your mobile devices using Pushover, NMA or Pushbullet',
 	opt => 'plugins.var.perl',
@@ -234,20 +234,20 @@ sub notify_nma($$$$$)
 }
 
 #
-# https://www.pushbullet.com/api
+# https://docs.pushbullet.com/v2/pushes/
 #
 sub notify_pushbullet($$$$)
 {
 	my ($apikey, $device_iden, $title, $body) = @_;
 
 	# Required API arguments
-	my $apiurl = "https://$apikey:\@api.pushbullet.com/api/pushes";
+	my $apiurl = "https://$apikey\@api.pushbullet.com/v2/pushes";
 	my @post = (
-		"device_iden=" . CGI::escape($device_iden),
 		"type=note",
 	);
 
 	# Optional API arguments
+	push(@post, "device_iden=" . CGI::escape($device_iden)) if ($device_iden && length($device_iden) > 0);
 	push(@post, "title=" . CGI::escape($title)) if ($title && length($title) > 0);
 	push(@post, "body=" . CGI::escape($body)) if ($body && length($body) > 0);
 
