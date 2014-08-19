@@ -148,7 +148,7 @@ sub url_cb
 		weechat::print("", $msg);
 	} elsif ($command =~ /notifymyandroid/ && $return_code == 0 && !($out =~ /success code=\"200\"/)) {
 		weechat::print("", $msg);
-	} elsif ($command =~ /pushbullet/ && $return_code == 0 && !($out =~ /notification_id/)) {
+	} elsif ($command =~ /pushbullet/ && $return_code == 0 && !($out =~ /iden/)) {
 		weechat::print("", $msg);
 	}
 
