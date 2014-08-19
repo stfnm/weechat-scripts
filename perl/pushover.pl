@@ -23,7 +23,7 @@ use CGI;
 my %SCRIPT = (
 	name => 'pushover',
 	author => 'stfn <stfnmd@gmail.com>',
-	version => '0.9',
+	version => '1.0',
 	license => 'GPL3',
 	desc => 'Send push notifications to your mobile devices using Pushover, NMA or Pushbullet',
 	opt => 'plugins.var.perl',
@@ -148,7 +148,7 @@ sub url_cb
 		weechat::print("", $msg);
 	} elsif ($command =~ /notifymyandroid/ && $return_code == 0 && !($out =~ /success code=\"200\"/)) {
 		weechat::print("", $msg);
-	} elsif ($command =~ /pushbullet/ && $return_code == 0 && !($out =~ /iden/)) {
+	} elsif ($command =~ /pushbullet/ && $return_code == 0 && !($out =~ /\"iden\"/)) {
 		weechat::print("", $msg);
 	}
 
