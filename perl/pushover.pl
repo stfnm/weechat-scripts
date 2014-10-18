@@ -18,7 +18,6 @@
 
 use strict;
 use warnings;
-use CGI;
 
 my %SCRIPT = (
 	name => 'pushover',
@@ -89,6 +88,15 @@ sub grep_list($$)
 	my ($str, $list) = @_;
 	my @array = split(/,/, $list);
 	return grep(/^\Q$str\E$/i, @array) ? 1 : 0;
+}
+
+sub url_escape
+{
+	my $toencode = shift;
+	return undef unless (defined($toencode));
+	utf8::encode($toencode) if (utf8::is_utf8($toencode));
+	$toencode =~ s/([^a-zA-Z0-9_.~-])/uc sprintf("%%%02x",ord($1))/eg;
+	return $toencode;
 }
 
 #
@@ -183,15 +191,15 @@ sub notify_pushover($$$$$$)
 
 	# Required API arguments
 	my @post = (
-		"token=" . CGI::escape($token),
-		"user=" . CGI::escape($user),
-		"message=" . CGI::escape($message),
+		"token=" . url_escape($token),
+		"user=" . url_escape($user),
+		"message=" . url_escape($message),
 	);
 
 	# Optional API arguments
-	push(@post, "title=" . CGI::escape($title)) if ($title && length($title) > 0);
-	push(@post, "priority=" . CGI::escape($priority)) if ($priority && length($priority) > 0);
-	push(@post, "sound=" . CGI::escape($sound)) if ($sound && length($sound) > 0);
+	push(@post, "title=" . url_escape($title)) if ($title && length($title) > 0);
+	push(@post, "priority=" . url_escape($priority)) if ($priority && length($priority) > 0);
+	push(@post, "sound=" . url_escape($sound)) if ($sound && length($sound) > 0);
 
 	# Send HTTP POST
 	my $hash = { "post"  => 1, "postfields" => join(";", @post) };
@@ -213,14 +221,14 @@ sub notify_nma($$$$$)
 
 	# Required API arguments
 	my @post = (
-		"apikey=" . CGI::escape($apikey),
-		"application=" . CGI::escape($application),
-		"event=" . CGI::escape($event),
-		"description=" . CGI::escape($description),
+		"apikey=" . url_escape($apikey),
+		"application=" . url_escape($application),
+		"event=" . url_escape($event),
+		"description=" . url_escape($description),
 	);
 
 	# Optional API arguments
-	push(@post, "priority=" . CGI::escape($priority)) if ($priority && length($priority) > 0);
+	push(@post, "priority=" . url_escape($priority)) if ($priority && length($priority) > 0);
 
 	# Send HTTP POST
 	my $hash = { "post"  => 1, "postfields" => join("&", @post) };
@@ -247,9 +255,9 @@ sub notify_pushbullet($$$$)
 	);
 
 	# Optional API arguments
-	push(@post, "device_iden=" . CGI::escape($device_iden)) if ($device_iden && length($device_iden) > 0);
-	push(@post, "title=" . CGI::escape($title)) if ($title && length($title) > 0);
-	push(@post, "body=" . CGI::escape($body)) if ($body && length($body) > 0);
+	push(@post, "device_iden=" . url_escape($device_iden)) if ($device_iden && length($device_iden) > 0);
+	push(@post, "title=" . url_escape($title)) if ($title && length($title) > 0);
+	push(@post, "body=" . url_escape($body)) if ($body && length($body) > 0);
 
 	# Send HTTP POST
 	my $hash = { "post"  => 1, "postfields" => join("&", @post) };
