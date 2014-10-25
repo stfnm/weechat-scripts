@@ -51,6 +51,11 @@ my $TIMEOUT = 30 * 1000;
 # Register script and setup hooks
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
 weechat::hook_print("", "notify_message,notify_private,notify_highlight", "", 1, "print_cb", "");
+weechat::hook_command($SCRIPT{"name"}, "send custom push notification",
+	"<text>",
+	"text: notification text to send",
+	"", "pushover_cb", "");
+
 init_config();
 
 #
@@ -90,7 +95,10 @@ sub grep_list($$)
 	return grep(/^\Q$str\E$/i, @array) ? 1 : 0;
 }
 
-sub url_escape
+#
+# URL escape (percent encoding)
+#
+sub url_escape($)
 {
 	my $toencode = shift;
 	return undef unless (defined($toencode));
@@ -128,6 +136,20 @@ sub print_cb
 	} elsif ($OPTIONS{show_priv_msg} eq "on" && $buffer_type eq "private") {
 		# Private message
 		notify($msg);
+	}
+
+	return weechat::WEECHAT_RC_OK;
+}
+
+#
+# /pushover
+#
+sub pushover_cb
+{
+	my ($data, $buffer, $args) = @_;
+
+	if (length($args) > 0) {
+		notify($args);
 	}
 
 	return weechat::WEECHAT_RC_OK;
