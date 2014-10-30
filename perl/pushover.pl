@@ -22,7 +22,7 @@ use warnings;
 my %SCRIPT = (
 	name => 'pushover',
 	author => 'stfn <stfnmd@gmail.com>',
-	version => '1.0',
+	version => '1.1',
 	license => 'GPL3',
 	desc => 'Send push notifications to your mobile devices using Pushover, NMA or Pushbullet',
 	opt => 'plugins.var.perl',
@@ -45,18 +45,20 @@ my %OPTIONS_DEFAULT = (
 	'verbose' => ['1', 'Verbosity level (0 = silently ignore any errors, 1 = display brief error, 2 = display full server response)'],
 );
 my %OPTIONS = ();
-my $DEBUG = 0;
 my $TIMEOUT = 30 * 1000;
 
-# Register script and setup hooks
+my $DEBUG = 0;
+
+# Register script and initialize config
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
+init_config();
+
+# Setup hooks
 weechat::hook_print("", "notify_message,notify_private,notify_highlight", "", 1, "print_cb", "");
 weechat::hook_command($SCRIPT{"name"}, "send custom push notification",
 	"<text>",
 	"text: notification text to send",
 	"", "pushover_cb", "");
-
-init_config();
 
 #
 # Handle config stuff
@@ -100,7 +102,7 @@ sub grep_list($$)
 #
 sub url_escape($)
 {
-	my $toencode = shift;
+	my $toencode = $_[0];
 	return undef unless (defined($toencode));
 	utf8::encode($toencode) if (utf8::is_utf8($toencode));
 	$toencode =~ s/([^a-zA-Z0-9_.~-])/uc sprintf("%%%02x",ord($1))/eg;
