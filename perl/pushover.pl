@@ -132,7 +132,7 @@ sub print_cb
 
 	my $msg = "[$buffer_full_name] <$prefix> ";
 
-	if ($OPTIONS{redact_priv_msg} eq "on") {
+	if ($buffer_type eq "private" && $OPTIONS{redact_priv_msg} eq "on") {
 		$msg .= "...";
 	} else {
 		$msg .= "$message";
