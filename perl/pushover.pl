@@ -44,11 +44,16 @@ my %OPTIONS_DEFAULT = (
 	'only_if_inactive' => ['off', 'Notify only if buffer is not the active (current) buffer'],
 	'blacklist' => ['', 'Comma separated list of buffers (full name) to blacklist for notifications (wildcard "*" is allowed, name beginning with "!" is excluded)'],
 	'verbose' => ['1', 'Verbosity level (0 = silently ignore any errors, 1 = display brief error, 2 = display full server response)'],
+        'rate_limit' => ['0', 'Rate Limit in Seconds (0 = unlimited), will send a maximum of 1 notification per limit time'],
+	'short_name' => ['off', 'Use short buffer name in notification'], 
 );
 my %OPTIONS = ();
 my $TIMEOUT = 30 * 1000;
 
 my $DEBUG = 0;
+
+# rate limit flag;
+my $rate_limit_ok = 1;
 
 # Register script and initialize config
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
@@ -111,6 +116,16 @@ sub url_escape($)
 }
 
 #
+# Flip rate_limit flag back to OK
+#
+sub rate_limit_cb
+{
+	$rate_limit_ok = 1;
+	if ($DEBUG) {
+		weechat::print("", "[$SCRIPT{name}] Rate Limit Deactivated");
+	}
+}
+#
 # Catch printed messages
 #
 sub print_cb
@@ -118,7 +133,13 @@ sub print_cb
 	my ($data, $buffer, $date, $tags, $displayed, $highlight, $prefix, $message) = @_;
 
 	my $buffer_type = weechat::buffer_get_string($buffer, "localvar_type");
-	my $buffer_full_name = weechat::buffer_get_string($buffer, "full_name");
+	my $buffer_full_name = "";	
+	# check for long or short name
+	if ($OPTIONS{short_name} eq 'on') {
+		$buffer_full_name = weechat::buffer_get_string($buffer, "short_name");
+	} else {
+		$buffer_full_name = weechat::buffer_get_string($buffer, "full_name");
+	}
 	my $away_msg = weechat::buffer_get_string($buffer, "localvar_away");
 	my $away = ($away_msg && length($away_msg) > 0) ? 1 : 0;
 
@@ -127,6 +148,13 @@ sub print_cb
 	    ($OPTIONS{only_if_away} eq "on" && $away == 0) ||
 	    ($OPTIONS{only_if_inactive} eq "on" && $buffer eq weechat::current_buffer()) ||
 	    weechat::buffer_match_list($buffer, $OPTIONS{blacklist})) {
+		return weechat::WEECHAT_RC_OK;
+	}
+
+	if ($rate_limit_ok == 0) {
+		if ($DEBUG) {
+			weechat::print("", "[$SCRIPT{name}] No Notification - Rate Limited.");
+		}
 		return weechat::WEECHAT_RC_OK;
 	}
 
@@ -200,6 +228,18 @@ sub url_cb
 sub notify($)
 {
 	my $message = $_[0];
+
+	# Start timer
+	if ($OPTIONS{rate_limit}) {
+		my $timer = $OPTIONS{rate_limit} * 1000;
+
+		if ($DEBUG) {
+			weechat::print("", "[$SCRIPT{name}] Rate Limit Activated. Timer: $timer");
+		}
+
+		$rate_limit_ok = 0;
+		weechat::hook_timer($timer, 0, 1, "rate_limit_cb", "");
+	}
 
 	# Notify services
 	if (grep_list("pushover", $OPTIONS{service})) {
