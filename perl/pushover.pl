@@ -49,6 +49,7 @@ my %OPTIONS_DEFAULT = (
 );
 my %OPTIONS = ();
 my $TIMEOUT = 30 * 1000;
+my $WEECHAT_VERSION;
 
 # Enable for debugging
 my $DEBUG = 0;
@@ -73,7 +74,7 @@ weechat::hook_command($SCRIPT{"name"}, "send custom push notification",
 sub init_config
 {
 	weechat::hook_config("$SCRIPT{'opt'}.$SCRIPT{'name'}.*", "config_cb", "");
-	my $version = weechat::info_get("version_number", "") || 0;
+	$WEECHAT_VERSION = weechat::info_get("version_number", "") || 0;
 	foreach my $option (keys %OPTIONS_DEFAULT) {
 		if (!weechat::config_is_set_plugin($option)) {
 			weechat::config_set_plugin($option, $OPTIONS_DEFAULT{$option}[0]);
@@ -81,11 +82,12 @@ sub init_config
 		} else {
 			$OPTIONS{$option} = weechat::config_get_plugin($option);
 		}
-		if ($version >= 0x00030500) {
+		if ($WEECHAT_VERSION >= 0x00030500) {
 			weechat::config_set_desc_plugin($option, $OPTIONS_DEFAULT{$option}[1]." (default: \"".$OPTIONS_DEFAULT{$option}[0]."\")");
 		}
 	}
 }
+
 sub config_cb
 {
 	my ($pointer, $name, $value) = @_;
@@ -114,6 +116,19 @@ sub url_escape($)
 	utf8::encode($toencode) if (utf8::is_utf8($toencode));
 	$toencode =~ s/([^a-zA-Z0-9_.~-])/uc sprintf("%%%02x",ord($1))/eg;
 	return $toencode;
+}
+
+#
+# Evaluate expression (used for /secure support)
+#
+sub eval_expr($)
+{
+	my $value = $_[0];
+	if ($WEECHAT_VERSION >= 0x00040200) {
+		my $eval_expression = weechat::string_eval_expression($value, {}, {}, {});
+		return $eval_expression if ($eval_expression ne "");
+	}
+	return $value;
 }
 
 #
@@ -245,13 +260,13 @@ sub notify($)
 
 	# Notify services
 	if (grep_list("pushover", $OPTIONS{service})) {
-		notify_pushover($OPTIONS{token}, $OPTIONS{user}, $message, "weechat", $OPTIONS{priority}, $OPTIONS{sound});
+		notify_pushover(eval_expr($OPTIONS{token}), eval_expr($OPTIONS{user}), $message, "weechat", $OPTIONS{priority}, $OPTIONS{sound});
 	}
 	if (grep_list("nma", $OPTIONS{service})) {
-		notify_nma($OPTIONS{nma_apikey}, "weechat", "$SCRIPT{name}.pl", $message, $OPTIONS{priority});
+		notify_nma(eval_expr($OPTIONS{nma_apikey}), "weechat", "$SCRIPT{name}.pl", $message, $OPTIONS{priority});
 	}
 	if (grep_list("pushbullet", $OPTIONS{service})) {
-		notify_pushbullet($OPTIONS{pb_apikey}, $OPTIONS{pb_device_iden}, "weechat", $message);
+		notify_pushbullet(eval_expr($OPTIONS{pb_apikey}), eval_expr($OPTIONS{pb_device_iden}), "weechat", $message);
 	}
 }
 
