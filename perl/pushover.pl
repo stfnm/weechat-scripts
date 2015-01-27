@@ -78,7 +78,7 @@ sub init_config
 			weechat::config_set_plugin($option, $OPTIONS_DEFAULT{$option}[0]);
 			$OPTIONS{$option} = $OPTIONS_DEFAULT{$option}[0];
 		} else {
-			$OPTIONS{$option} = weechat::config_get_plugin($option);
+			$OPTIONS{$option} = weechat::string_eval_expression(weechat::config_get_plugin($option), {}, {}, {});
 		}
 		if ($version >= 0x00030500) {
 			weechat::config_set_desc_plugin($option, $OPTIONS_DEFAULT{$option}[1]." (default: \"".$OPTIONS_DEFAULT{$option}[0]."\")");
