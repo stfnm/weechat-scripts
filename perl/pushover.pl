@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013-2014  stfn <stfnmd@gmail.com>
+# Copyright (C) 2013-2015  stfn <stfnmd@gmail.com>
 # https://github.com/stfnm/weechat-scripts
 #
 # This program is free software: you can redistribute it and/or modify
@@ -44,16 +44,17 @@ my %OPTIONS_DEFAULT = (
 	'only_if_inactive' => ['off', 'Notify only if buffer is not the active (current) buffer'],
 	'blacklist' => ['', 'Comma separated list of buffers (full name) to blacklist for notifications (wildcard "*" is allowed, name beginning with "!" is excluded)'],
 	'verbose' => ['1', 'Verbosity level (0 = silently ignore any errors, 1 = display brief error, 2 = display full server response)'],
-        'rate_limit' => ['0', 'Rate Limit in Seconds (0 = unlimited), will send a maximum of 1 notification per limit time'],
-	'short_name' => ['off', 'Use short buffer name in notification'], 
+	'rate_limit' => ['0', 'Rate limit in seconds (0 = unlimited), will send a maximum of 1 notification per time limit'],
+	'short_name' => ['off', 'Use short buffer name in notification'],
 );
 my %OPTIONS = ();
 my $TIMEOUT = 30 * 1000;
 
+# Enable for debugging
 my $DEBUG = 0;
 
-# rate limit flag;
-my $rate_limit_ok = 1;
+# Rate limit flag
+my $RATE_LIMIT_OK = 1;
 
 # Register script and initialize config
 weechat::register($SCRIPT{"name"}, $SCRIPT{"author"}, $SCRIPT{"version"}, $SCRIPT{"license"}, $SCRIPT{"desc"}, "", "");
@@ -120,11 +121,12 @@ sub url_escape($)
 #
 sub rate_limit_cb
 {
-	$rate_limit_ok = 1;
+	$RATE_LIMIT_OK = 1;
 	if ($DEBUG) {
 		weechat::print("", "[$SCRIPT{name}] Rate Limit Deactivated");
 	}
 }
+
 #
 # Catch printed messages
 #
@@ -151,7 +153,7 @@ sub print_cb
 		return weechat::WEECHAT_RC_OK;
 	}
 
-	if ($rate_limit_ok == 0) {
+	if ($RATE_LIMIT_OK == 0) {
 		if ($DEBUG) {
 			weechat::print("", "[$SCRIPT{name}] No Notification - Rate Limited.");
 		}
@@ -237,7 +239,7 @@ sub notify($)
 			weechat::print("", "[$SCRIPT{name}] Rate Limit Activated. Timer: $timer");
 		}
 
-		$rate_limit_ok = 0;
+		$RATE_LIMIT_OK = 0;
 		weechat::hook_timer($timer, 0, 1, "rate_limit_cb", "");
 	}
 
