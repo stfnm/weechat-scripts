@@ -150,7 +150,7 @@ sub print_cb
 	my ($data, $buffer, $date, $tags, $displayed, $highlight, $prefix, $message) = @_;
 
 	my $buffer_type = weechat::buffer_get_string($buffer, "localvar_type");
-	my $buffer_full_name = "";	
+	my $buffer_full_name = "";
 	# check for long or short name
 	if ($OPTIONS{short_name} eq 'on') {
 		$buffer_full_name = weechat::buffer_get_string($buffer, "short_name");
@@ -227,14 +227,17 @@ sub url_cb
 		$msg .= "@_";
 	}
 
-	# Check server response and display error message if NOT successful
-	if ($command =~ /pushover/ && $return_code == 0 && !($out =~ /\"status\":1/)) {
-		weechat::print("", $msg);
-	} elsif ($command =~ /notifymyandroid/ && $return_code == 0 && !($out =~ /success code=\"200\"/)) {
-		weechat::print("", $msg);
-	} elsif ($command =~ /pushbullet/ && $return_code == 0 && !($out =~ /\"iden\"/)) {
-		weechat::print("", $msg);
+	# Check if server response reported success
+	if ($command =~ /pushover/ && $return_code == 0 && $out =~ /\"status\":1/) {
+		return weechat::WEECHAT_RC_OK;
+	} elsif ($command =~ /notifymyandroid/ && $return_code == 0 && $out =~ /success code=\"200\"/) {
+		return weechat::WEECHAT_RC_OK;
+	} elsif ($command =~ /pushbullet/ && $return_code == 0 && $out =~ /\"iden\"/) {
+		return weechat::WEECHAT_RC_OK;
 	}
+
+	# Otherwise display error message
+	weechat::print("", $msg);
 
 	return weechat::WEECHAT_RC_OK;
 }
