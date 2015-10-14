@@ -18,6 +18,7 @@
 
 use strict;
 use warnings;
+use WWW::PushBullet;
 
 my %SCRIPT = (
 	name => 'pushover',
@@ -332,31 +333,14 @@ sub notify_nma($$$$$)
 	return weechat::WEECHAT_RC_OK;
 }
 
-#
-# https://docs.pushbullet.com/v2/pushes/
-#
+
+
 sub notify_pushbullet($$$$)
 {
 	my ($apikey, $device_iden, $title, $body) = @_;
-
-	# Required API arguments
-	my $apiurl = "https://$apikey\@api.pushbullet.com/v2/pushes";
-	my @post = (
-		"type=note",
-	);
-
-	# Optional API arguments
-	push(@post, "device_iden=" . url_escape($device_iden)) if ($device_iden && length($device_iden) > 0);
-	push(@post, "title=" . url_escape($title)) if ($title && length($title) > 0);
-	push(@post, "body=" . url_escape($body)) if ($body && length($body) > 0);
-
-	# Send HTTP POST
-	my $hash = { "post"  => 1, "postfields" => join("&", @post) };
-	if ($DEBUG) {
-		weechat::print("", "$apiurl [$SCRIPT{name}] Debug: msg -> `$body' HTTP POST -> @post");
-	} else {
-		weechat::hook_process_hashtable("url:$apiurl", $hash, $TIMEOUT, "url_cb", "");
-	}
+	my $pb = WWW::PushBullet->new({apikey => $apikey});
+	$pb->push_note({ device_id => $device_iden, title => $title,
+	body => $body });
 
 	return weechat::WEECHAT_RC_OK;
 }
