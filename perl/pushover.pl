@@ -40,6 +40,7 @@ my %OPTIONS_DEFAULT = (
 	'show_highlights' => ['on', 'Notify on highlights'],
 	'show_priv_msg' => ['on', 'Notify on private messages'],
 	'redact_priv_msg' => ['off', 'When receiving private message notifications, hide the actual message text'],
+	'redact_all_msg' => ['off', 'When receiving any message notifications, hide the actual message text'],
 	'only_if_away' => ['off', 'Notify only if away status is active'],
 	'only_if_inactive' => ['off', 'Notify only if buffer is not the active (current) buffer'],
 	'blacklist' => ['', 'Comma separated list of buffers (full name) to blacklist for notifications (wildcard "*" is allowed, name beginning with "!" is excluded)'],
@@ -177,7 +178,8 @@ sub print_cb
 
 	my $msg = "[$buffer_full_name] <$prefix> ";
 
-	if ($buffer_type eq "private" && $OPTIONS{redact_priv_msg} eq "on") {
+	if (($buffer_type eq "private" && $OPTIONS{redact_priv_msg} eq "on") ||
+            $OPTIONS{redact_all_msg} eq "on") {
 		$msg .= "...";
 	} else {
 		$msg .= "$message";
