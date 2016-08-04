@@ -29,12 +29,14 @@ my %SCRIPT = (
 );
 my %OPTIONS_DEFAULT = (
 	'enabled' => ['on', "Turn script on or off"],
-	'service' => ['pushover', 'Notification service to use. Multiple services may be supplied as comma separated list. (supported services: pushover, nma, pushbullet)'],
+	'service' => ['pushover', 'Notification service to use. Multiple services may be supplied as comma separated list. (supported services: pushover, nma, pushbullet, join)'],
 	'token' => ['ajEX9RWhxs6NgeXFJxSK2jmpY54C9S', 'pushover API token/key (You may feel free to use your own token, so you get your own monthly quota of messages without being affected by other users. See also: https://pushover.net/faq#overview-distribution )'],
 	'user' => ['', "pushover user key"],
 	'nma_apikey' => ['', "nma API key"],
 	'pb_apikey' => ['', "Pushbullet API key"],
 	'pb_device_iden' => ['', "Device Iden of pushbullet device"],
+        'join_apikey' => ['', "Join API key"],
+        'join_device_ids' => ['', "List of Join device ids separated by commas"],
 	'sound' => ['', "Sound (empty for default)"],
 	'priority' => ['', "priority (empty for default)"],
 	'show_highlights' => ['on', 'Notify on highlights'],
@@ -234,6 +236,8 @@ sub url_cb
 		return weechat::WEECHAT_RC_OK;
 	} elsif ($command =~ /pushbullet/ && $return_code == 0 && $out =~ /\"iden\"/) {
 		return weechat::WEECHAT_RC_OK;
+	} elsif ($command =~ /joinjoaomgcd\.appspot\.com/ && $return_code == 0 && $out =~ /\"success\": true/) {
+		return weechat::WEECHAT_RC_OK;
 	}
 
 	# Otherwise display error message
@@ -270,6 +274,9 @@ sub notify($)
 	}
 	if (grep_list("pushbullet", $OPTIONS{service})) {
 		notify_pushbullet(eval_expr($OPTIONS{pb_apikey}), eval_expr($OPTIONS{pb_device_iden}), "weechat", $message);
+	}
+	if (grep_list("join", $OPTIONS{service})) {
+		notify_join(eval_expr($OPTIONS{join_apikey}), eval_expr($OPTIONS{join_device_ids}), "weechat", $message);
 	}
 }
 
@@ -356,6 +363,31 @@ sub notify_pushbullet($$$$)
 		weechat::print("", "$apiurl [$SCRIPT{name}] Debug: msg -> `$body' HTTP POST -> @post");
 	} else {
 		weechat::hook_process_hashtable("url:$apiurl", $hash, $TIMEOUT, "url_cb", "");
+	}
+
+	return weechat::WEECHAT_RC_OK;
+}
+
+#
+# http://joaoapps.com/join/api/
+#
+sub notify_join($$$$)
+{
+	my ($apikey, $device_ids, $title, $body) = @_;
+
+	# Required API arguments
+	my $apiurl = "https://joinjoaomgcd.appspot.com/_ah/api/messaging/v1/sendPush?deviceIds=" . url_escape($device_ids);
+
+	# Optional Arguments
+	$apiurl .= "&apikey=" . url_escape($apikey) if ($apikey && length($apikey) > 0);
+	$apiurl .= "&title=" . url_escape($title) if ($title && length($title) > 0);
+	$apiurl .= "&text=" . url_escape($body) if ($body && length($body) > 0);
+
+	# Send HTTP request
+	if ($DEBUG) {
+		weechat::print("", "$apiurl [$SCRIPT{name}] Debug: msg -> `$body'");
+	} else {
+		weechat::hook_process("url:$apiurl", $TIMEOUT, "url_cb", "");
 	}
 
 	return weechat::WEECHAT_RC_OK;
