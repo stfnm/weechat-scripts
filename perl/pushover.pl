@@ -287,7 +287,7 @@ sub notify_pushover($$$$$$)
 	push(@post, "sound=" . url_escape($sound)) if ($sound && length($sound) > 0);
 
 	# Send HTTP POST
-	my $hash = { "post"  => 1, "postfields" => join(";", @post) };
+	my $hash = { "post"  => 1, "postfields" => join("&", @post) };
 	if ($DEBUG) {
 		weechat::print("", "[$SCRIPT{name}] Debug: msg -> `$message' HTTP POST -> @post");
 	} else {
