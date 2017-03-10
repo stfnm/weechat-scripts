@@ -24,7 +24,7 @@ my %SCRIPT = (
 	author => 'stfn <stfnmd@gmail.com>',
 	version => '2.0',
 	license => 'GPL3',
-	desc => 'Send push notifications to your mobile devices using Pushover or any /trigger',
+	desc => 'Send push notifications to your mobile devices using Pushover',
 	opt => 'plugins.var.perl',
 );
 my %OPTIONS_DEFAULT = (
@@ -65,8 +65,13 @@ weechat::hook_command($SCRIPT{"name"}, "send notification",
 	"\n" .
 	"Don't forget to configure your own Pushover user and token.\n" .
 	"\n" .
-	"You can also setup custom notifications (for any other services etc.) by using a /trigger on the hsignal \"pushover\". Example:\n" .
-	"/trigger add mynotify hsignal pushover \"\" \"\" \"/exec -bg curl -s --form-string 'token=abc123' --form-string 'user=user123' --form-string 'message=\${message_stripped}' https://api.pushover.net/1/messages.json\"",
+	"You can also setup custom notifications (for any other services etc.) by using a /trigger on the hsignal \"pushover\".\n\nExamples:\n" .
+	"\n" .
+	"pushover.net using curl:\n" .
+	"/trigger add mynotify hsignal pushover \"\" \"\" \"/exec -bg curl -s --form-string 'token=abc123' --form-string 'user=user123' --form-string 'message=\${message_stripped}' https://api.pushover.net/1/messages.json\"\n" .
+	"\n" .
+	"free-mobile.fr using curl:\n" .
+	"/trigger add mynotify hsignal pushover \"\" \"\" \"/exec -bg curl -s 'https://smsapi.free-mobile.fr/sendmsg?user=USER&pass=TOKEN&msg=\${message_escaped}'\"\n",
 	"", "pushover_cmd_cb", "");
 
 #
